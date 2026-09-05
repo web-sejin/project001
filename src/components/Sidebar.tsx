@@ -9,7 +9,7 @@ const NAV = [
   { href: "/", label: "현황판" },
   { href: "/calendar", label: "촬영 캘린더" },
   { href: "/accommodations", label: "숙소 관리" },
-  { href: "/ax", label: "AX 개선 아이디어" },
+  { href: "/ax", label: "AX 관점 아이디어" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -69,7 +69,7 @@ export function Sidebar() {
             AX
             <Toggle
               id="ax-mode-mobile"
-              label="AX 개선 아이디어 표시"
+              label="AX 관점 아이디어 표시"
               checked={axMode}
               onChange={setAxMode}
             />
@@ -115,10 +115,10 @@ function AxToggle({
   return (
     <div className="mx-2 mb-3 rounded-box border border-ai/50 border-l-[3px] border-l-ai bg-nav-soft p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-body font-semibold text-white">AX 개선 아이디어</span>
+        <span className="text-body font-semibold text-white">AX 관점 아이디어</span>
         <Toggle
           id="ax-mode"
-          label="AX 개선 아이디어 표시"
+          label="AX 관점 아이디어 표시"
           checked={axMode}
           onChange={setAxMode}
         />
@@ -130,10 +130,18 @@ function AxToggle({
               aria-hidden
               className="inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] bg-ai"
             />
-            보라색으로 표시된 곳이 AI가 개입하는 지점입니다
+            보라 — AI를 쓰는 지점
           </p>
-          <p className="mt-1 text-badge leading-[15px] text-nav-muted">
-            끄면 지금 쓰고 있을 법한 관리 화면이 됩니다.
+          <p className="mt-1 flex items-center gap-1.5 text-badge text-nav-fg">
+            <span
+              aria-hidden
+              className="inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] bg-auto"
+            />
+            남색 — 자동화 (AI 아님)
+          </p>
+          <p className="mt-1.5 text-badge leading-[15px] text-nav-muted">
+            표식에 마우스를 올리면 설명이 펼쳐집니다. 끄면 지금 쓰고 있을 법한
+            관리 화면이 됩니다.
           </p>
         </>
       ) : (

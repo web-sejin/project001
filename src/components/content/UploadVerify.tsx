@@ -68,6 +68,7 @@ export function UploadVerify({ content }: { content: Content }) {
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [recommendedOnly, setRecommendedOnly] = useState(false);
 
+  const axMode = store.axMode;
   const files = store.uploadsOf(content.id);
   const shotList = store.shotListOf(content.accommodationId);
   const labels = useMemo(() => shotList.map((s) => s.label), [shotList]);
@@ -238,19 +239,24 @@ export function UploadVerify({ content }: { content: Content }) {
             {files.length > 0 ? (
               <div className="mt-4">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className="text-body font-semibold text-fg">분류 결과</span>
-                  <AiBadge label="파일명 기반 추정 (모의)" />
-                  <AxTag id="ax-02" align="left" />
+                  <span className="text-body font-semibold text-fg">
+                    {axMode ? "분류 결과" : "올린 사진"}
+                  </span>
+                  {axMode ? <AiBadge label="파일명 기반 추정 (모의)" /> : null}
+                  {axMode ? <AxTag id="ax-02" align="left" /> : null}
+                  {axMode ? (
                   <InfoTip>
                     실제 시스템은 이 자리에서 LLM 비전으로 이미지를 분류합니다. 목업에는
                     모델이 없어 파일명만 봅니다. 못 알아보면 미분류로 두고 직접 고르게
                     합니다.
                   </InfoTip>
-                  {unclassified > 0 ? (
+                  ) : null}
+                  {axMode && unclassified > 0 ? (
                     <Badge variant="warn">
                       미분류 <span className="tnum">{unclassified}</span>장
                     </Badge>
                   ) : null}
+                  {axMode ? (
                   <label className="ml-auto flex items-center gap-1.5 text-body text-fg-muted">
                     추천만 보기
                     <Toggle
@@ -260,12 +266,13 @@ export function UploadVerify({ content }: { content: Content }) {
                       onChange={setRecommendedOnly}
                     />
                   </label>
+                  ) : null}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
                   {visible.slice(0, RENDER_CAP).map((f) => {
                     const v = verdicts[f.id];
-                    const excluded = Boolean(v?.reason);
+                    const excluded = axMode && Boolean(v?.reason);
                     return (
                       <figure key={f.id} className="min-w-0">
                         <div className="relative">
@@ -285,6 +292,7 @@ export function UploadVerify({ content }: { content: Content }) {
                           ) : null}
                         </div>
                         <figcaption className="mt-1">
+                          {axMode ? (
                           <select
                             value={f.label}
                             onChange={(e) =>
@@ -304,9 +312,10 @@ export function UploadVerify({ content }: { content: Content }) {
                               </option>
                             ))}
                           </select>
+                          ) : null}
                           <span className="mt-px block truncate text-badge text-fg-subtle">
-                            {metrics[f.id]
-                              ? `선명도 ${Math.round(metrics[f.id].sharpness)}`
+                            {axMode && metrics[f.id]
+                              ? `${f.name} · 선명도 ${Math.round(metrics[f.id].sharpness)}`
                               : f.name}
                           </span>
                         </figcaption>
@@ -350,7 +359,7 @@ export function UploadVerify({ content }: { content: Content }) {
       </div>
 
       <div className="space-y-4">
-        {files.length > 0 ? (
+        {axMode && files.length > 0 ? (
           <AxHighlight id="ax-03">
             <Panel tone="ai">
               <PanelHeader
@@ -408,6 +417,7 @@ export function UploadVerify({ content }: { content: Content }) {
           </AxHighlight>
         ) : null}
 
+        {axMode ? (
         <AxHighlight id="ax-02">
           <Panel tone={files.length > 0 && missing.length > 0 ? "ai" : "default"}>
             <PanelHeader
@@ -523,6 +533,42 @@ export function UploadVerify({ content }: { content: Content }) {
             )}
           </Panel>
         </AxHighlight>
+        ) : (
+          <Panel>
+            <PanelHeader title="촬영 정보" />
+            <dl className="divide-y divide-line text-body">
+              <div className="flex gap-3 px-4 py-2">
+                <dt className="w-16 shrink-0 text-fg-subtle">촬영일</dt>
+                <dd className="flex-1 text-fg">{content.shootDate}</dd>
+              </div>
+              <div className="flex gap-3 px-4 py-2">
+                <dt className="w-16 shrink-0 text-fg-subtle">작가</dt>
+                <dd className="flex-1 text-fg">{content.photographer}</dd>
+              </div>
+              <div className="flex gap-3 px-4 py-2">
+                <dt className="w-16 shrink-0 text-fg-subtle">올린 사진</dt>
+                <dd className="tnum flex-1 text-fg">{files.length}장</dd>
+              </div>
+            </dl>
+            {beforeShoot ? (
+              <div className="border-t border-line p-4">
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  onClick={() =>
+                    store.updateContent(content.id, {
+                      status: "촬영완료",
+                      statusChangedAt: TODAY,
+                      stuckDays: 0,
+                    })
+                  }
+                >
+                  촬영 완료로 처리
+                </Button>
+              </div>
+            ) : null}
+          </Panel>
+        )}
       </div>
     </div>
   );

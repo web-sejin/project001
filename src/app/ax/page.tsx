@@ -4,7 +4,7 @@ import { TierBadge } from "@/components/AxNote";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
-import { AX_IDEAS } from "@/data/ax";
+import { AX_IDEAS, TIER_DEF, axKind } from "@/data/ax";
 import { STAGES } from "@/data/types";
 
 const FUNNEL = [
@@ -45,12 +45,12 @@ const STAGE_TITLE: Record<string, string> = {
 
 export default function AxPage() {
   const maxCount = FUNNEL[0].count;
-  const notAi = AX_IDEAS.filter((i) => i.tiers.every((t) => t === "AI 아님")).length;
+  const notAi = AX_IDEAS.filter((i) => axKind(i) === "자동화").length;
 
   return (
     <div>
       <PageHeader
-        title="AX 개선 아이디어"
+        title="AX 관점 아이디어"
         purpose="업무 흐름의 각 단계에 AI 또는 자동화를 어디에 넣을지, 그리고 어디에 넣지 않을지 정리했습니다."
       />
 
@@ -71,6 +71,60 @@ export default function AxPage() {
             </p>
           </div>
         </Panel>
+
+        <section>
+          <h2 className="text-section font-semibold text-fg">수단 층위 정의</h2>
+          <p className="mt-1 text-body leading-[19px] text-fg-muted">
+            &ldquo;AI로 처리합니다&rdquo;가 실제로는 서로 다른 네 가지를 가리킵니다.
+            비용도 운영 방식도 다르므로 구분해서 씁니다.
+          </p>
+          <Panel className="mt-3">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] border-collapse text-body">
+                <thead>
+                  <tr className="bg-surface text-left">
+                    <Th className="w-28">층위</Th>
+                    <Th>무엇인가</Th>
+                    <Th className="w-56">실제 도구</Th>
+                    <Th className="w-40">비용</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(["연산", "전용 모델", "LLM 비전", "LLM", "AI 아님"] as const).map(
+                    (tier) => (
+                      <tr key={tier} className="border-b border-line align-top">
+                        <td className="px-2.5 py-2">
+                          <TierBadge tier={tier} />
+                        </td>
+                        <td className="px-2.5 py-2 leading-[19px] text-fg">
+                          {TIER_DEF[tier].what}
+                        </td>
+                        <td className="px-2.5 py-2 leading-[19px] text-fg-muted">
+                          {TIER_DEF[tier].tools}
+                        </td>
+                        <td className="px-2.5 py-2 leading-[19px] text-fg-muted">
+                          {TIER_DEF[tier].cost}
+                        </td>
+                      </tr>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-line bg-surface px-4 py-2.5">
+              <p className="flex flex-wrap items-center gap-2 text-badge leading-[16px] text-fg-muted">
+                <span className="inline-flex items-center gap-1 rounded-box border border-ai-line bg-ai-bg px-1.5 py-0.5 font-semibold text-ai">
+                  AI를 씁니다
+                </span>
+                LLM · LLM 비전 · 전용 모델
+                <span className="inline-flex items-center gap-1 rounded-box border border-auto-line bg-auto-bg px-1.5 py-0.5 font-semibold text-auto">
+                  자동화 · AI 아님
+                </span>
+                순수 연산 · 규칙
+              </p>
+            </div>
+          </Panel>
+        </section>
 
         <section>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -97,7 +151,7 @@ export default function AxPage() {
                             {idea.title}
                           </h3>
                           {idea.tiers.map((t) => (
-                            <TierBadge key={t} tier={t} />
+                            <TierBadge key={t} tier={t} means={idea.means[t]} />
                           ))}
                         </div>
 
@@ -270,5 +324,21 @@ export default function AxPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+function Th({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <th
+      className={`border-b border-line-strong px-2.5 py-2 text-badge font-semibold text-fg-muted ${className}`}
+    >
+      {children}
+    </th>
   );
 }

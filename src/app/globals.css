@@ -23,6 +23,11 @@
   --color-ai-bg: #F3EFFA;
   --color-ai-line: #D9CCEC;
 
+  /* 자동화 — AI가 아닌 개선 지점. 보라와 섞이면 구분이 안 된다 */
+  --color-auto: #2C5CA8;
+  --color-auto-bg: #EEF3FC;
+  --color-auto-line: #C6D7EF;
+
   /* 사이드바 — 중립 다크.
      보라를 여기에 쓰면 브랜드 색이 되어 버려서 AI 표시가 묻힌다.
      보라는 AI 산출물 전용으로만 남긴다. */
