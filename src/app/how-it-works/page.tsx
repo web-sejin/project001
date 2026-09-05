@@ -125,10 +125,56 @@ export default function HowItWorksPage() {
     <div>
       <PageHeader
         title="처리 구조"
-        description="화면을 이렇게 만든 근거입니다. 어디가 병목이고, 각 지점에 어떤 수단을 왜 골랐는지 정리했습니다."
+        purpose="화면을 이렇게 만든 근거를 정리한 문서 화면입니다. 어디가 병목이고, 각 지점에 어떤 수단을 왜 골랐는지 — 특히 어디에 AI를 쓰고 어디에 안 썼는지를 밝힙니다."
       />
 
       <div className="max-w-4xl space-y-6 p-4 lg:p-6">
+        <section>
+          <h2 className="text-section font-semibold text-fg">0. 화면 구성</h2>
+          <p className="mt-1 text-body text-fg-muted">
+            운영 화면과 기준 정보 화면을 나눴습니다. 기준 정보는 등록 순서대로 세워
+            둡니다.
+          </p>
+          <Panel className="mt-3">
+            <ul className="divide-y divide-line text-body">
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">시설 관리</span>
+                <span className="ml-2 text-fg-muted">
+                  촬영 필수 컷 규칙을 정의합니다. 이 시스템에서 자동화의 출발점입니다.
+                </span>
+              </li>
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">숙소 관리</span>
+                <span className="ml-2 text-fg-muted">
+                  숙소가 보유한 시설을 고르면 체크리스트가 전개되고, 저장 직후 촬영
+                  일정까지 등록합니다.
+                </span>
+              </li>
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">촬영 캘린더</span>
+                <span className="ml-2 text-fg-muted">
+                  날짜를 먼저 정하는 경로. 빈 날짜를 클릭해도 같은 촬영 건이
+                  만들어집니다.
+                </span>
+              </li>
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">현황판</span>
+                <span className="ml-2 text-fg-muted">
+                  등록된 촬영 건의 진행 상태와 병목을 봅니다. 지표와 보드를 한 화면에
+                  둬서 &ldquo;정체 3건&rdquo;에서 바로 그 건으로 내려갈 수 있게 했습니다.
+                </span>
+              </li>
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">콘텐츠 상세</span>
+                <span className="ml-2 text-fg-muted">
+                  촬영 → 업로드·분류 → 보정·검수 → 발행. 업무 흐름 네 단계가 그대로 탭
+                  네 개입니다.
+                </span>
+              </li>
+            </ul>
+          </Panel>
+        </section>
+
         <section>
           <h2 className="text-section font-semibold text-fg">1. 지금의 흐름과 병목</h2>
           <p className="mt-1 text-body text-fg-muted">

@@ -1,7 +1,5 @@
-import { generateShotList, getAccommodation } from "./accommodations";
-import { getContent } from "./contents";
 import { intBetween, makeRng } from "@/lib/rand";
-import type { ShotItem } from "./types";
+import type { Content, ShotItem } from "./types";
 
 /** AI를 쓰는 층위. 화면 곳곳의 ⓘ 툴팁이 이 정의를 참조한다. */
 export type Tier = "연산" | "전용 모델" | "LLM 비전" | "LLM" | "AI 아님";
@@ -68,7 +66,7 @@ const OVERRIDES: Record<
     uploaded: 812,
     previewDone: true,
     rawPending: false,
-    excludedShotLabels: ["반려동물 동반 공간"],
+    excludedShotLabels: ["스파 · 사우나"],
     coRetoucher: "유가온",
   },
   "c-03": {
@@ -80,12 +78,13 @@ const OVERRIDES: Record<
       {
         label: "바비큐존",
         confidence: "high",
-        reason: "체크리스트 항목이 필수인데 라벨링 결과에 해당 공간이 한 장도 없음",
+        reason: "체크리스트 필수 항목인데 라벨링 결과에 해당 공간이 한 장도 없습니다",
       },
       {
         label: "수영장 야간",
         confidence: "low",
-        reason: "야간 컷 3장이 검출됐으나 촬영 위치가 수영장인지 불확실. 사람 확인 필요",
+        reason:
+          "야간 컷 3장이 검출됐지만 촬영 위치가 수영장인지 불확실합니다. 사람 확인이 필요합니다",
       },
     ],
   },
@@ -103,38 +102,33 @@ const OVERRIDES: Record<
     rawPending: false,
     missingLabels: [
       {
-        label: "욕실 2종",
+        label: "디럭스룸 욕실",
         confidence: "high",
-        reason: "2개 객실 타입 중 1개 타입의 욕실 컷이 없음. 재촬영 2회가 여기서 발생했다",
+        reason:
+          "객실 2타입 중 디럭스룸 욕실 컷이 없습니다. 재촬영 2회가 여기서 발생했습니다",
       },
     ],
   },
 };
 
-export function getAnalysis(contentId: string): ContentAnalysis | null {
-  const content = getContent(contentId);
-  if (!content) return null;
-  const acc = getAccommodation(content.accommodationId);
-  if (!acc) return null;
+export function buildAnalysis(
+  content: Content,
+  shotList: ShotItem[],
+): ContentAnalysis {
+  const ov = OVERRIDES[content.id] ?? {};
+  const rng = makeRng(`${content.id}-analysis`);
 
-  const ov = OVERRIDES[contentId] ?? {};
-  const rng = makeRng(`${contentId}-analysis`);
-  const shotList = generateShotList(acc.facilities, acc.id);
-
-  const missingLabels = ov.missingLabels ?? [];
+  const missingLabels = (ov.missingLabels ?? []).filter((m) =>
+    shotList.some((s) => s.label === m.label),
+  );
   const missingSet = new Set(missingLabels.map((m) => m.label));
-
   const notShot = content.status === "촬영예정";
 
   const shotCounts: Record<string, number> = {};
   for (const item of shotList) {
-    if (notShot) {
-      shotCounts[item.label] = 0;
-    } else if (missingSet.has(item.label)) {
-      shotCounts[item.label] = item.label.includes("욕실") ? Math.floor(item.minCount / 2) : 0;
-    } else {
-      shotCounts[item.label] = item.minCount + intBetween(rng, 0, 9);
-    }
+    if (notShot) shotCounts[item.label] = 0;
+    else if (missingSet.has(item.label)) shotCounts[item.label] = 0;
+    else shotCounts[item.label] = item.minCount + intBetween(rng, 0, 9);
   }
 
   const total = notShot ? 0 : (ov.total ?? intBetween(rng, 620, 880));
@@ -155,25 +149,29 @@ export function getAnalysis(contentId: string): ContentAnalysis | null {
       reason: "흔들림",
       count: blur,
       tier: "연산",
-      method: "라플라시안 분산으로 엣지 선명도를 측정한다. 학습 모델이 아니라 수식이라 800장을 수 초에 처리한다.",
+      method:
+        "라플라시안 분산으로 엣지 선명도를 측정합니다. 학습 모델이 아니라 수식이라 800장을 수 초에 처리합니다.",
     },
     {
       reason: "노출 오류",
       count: exposure,
       tier: "연산",
-      method: "히스토그램 분석. 화이트/블랙 클리핑 비율이 임계치를 넘는 컷을 제외한다.",
+      method:
+        "히스토그램 분석. 화이트·블랙 클리핑 비율이 임계치를 넘는 컷을 제외합니다.",
     },
     {
       reason: "중복 · 유사 컷",
       count: dup,
       tier: "전용 모델",
-      method: "CLIP 계열 임베딩 벡터의 코사인 유사도. LLM보다 훨씬 싸고 빠르며 로컬 실행도 가능하다.",
+      method:
+        "CLIP 계열 임베딩 벡터의 코사인 유사도. LLM보다 훨씬 싸고 빠르며 로컬 실행도 가능합니다.",
     },
     {
       reason: "대표 컷 추천",
       count: recommended,
       tier: "LLM 비전",
-      method: "남은 컷만 공간 라벨링한 뒤 라벨별 상위를 선별한다. 중복 그룹은 대표 1장만 라벨링하고 나머지에 상속시킨다.",
+      method:
+        "남은 컷만 공간 라벨링한 뒤 라벨별 상위를 선별합니다. 중복 그룹은 대표 1장만 라벨링하고 나머지에 상속시킵니다.",
     },
   ];
 
@@ -197,7 +195,7 @@ export function getAnalysis(contentId: string): ContentAnalysis | null {
   });
 
   return {
-    contentId,
+    contentId: content.id,
     shotList,
     shotCounts,
     total,
@@ -208,7 +206,9 @@ export function getAnalysis(contentId: string): ContentAnalysis | null {
     select,
     timings,
     missing,
-    excludedShotLabels: ov.excludedShotLabels ?? [],
+    excludedShotLabels: (ov.excludedShotLabels ?? []).filter((l) =>
+      shotList.some((s) => s.label === l),
+    ),
     dismissedMissing: ov.dismissedMissing ?? [],
     coRetoucher: ov.coRetoucher ?? null,
   };
@@ -221,4 +221,9 @@ export function shotProgress(a: ContentAnalysis) {
   );
   const met = active.filter((s) => (a.shotCounts[s.label] ?? 0) >= s.minCount);
   return { met: met.length, total: active.length };
+}
+
+/** 사람이 아직 처리하지 않은 누락 경고 */
+export function openMissing(a: ContentAnalysis): MissingItem[] {
+  return a.missing.filter((m) => !a.dismissedMissing.includes(m.label));
 }

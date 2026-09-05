@@ -1,15 +1,20 @@
-import { getAnalysis } from "./analysis";
-import { getContent } from "./contents";
 import { intBetween, makeRng, pick } from "@/lib/rand";
-import type { ExcludeReason, Photo, RejectRecord, ReviewFlag } from "./types";
+import type { ContentAnalysis } from "./analysis";
+import type {
+  Content,
+  ExcludeReason,
+  Photo,
+  RejectRecord,
+  ReviewFlag,
+} from "./types";
 
 /**
  * 목업에서 렌더링할 사진 수.
  * 실제 대상은 800장이지만 화면에 800개 DOM을 그릴 이유가 없다.
  * 추천 컷 일부 + 제외 컷 샘플만 만들고, 전체 숫자는 집계값으로 보여준다.
  */
-const RENDER_RECOMMENDED = 48;
-const RENDER_EXCLUDED = 24;
+export const RENDER_RECOMMENDED = 48;
+export const RENDER_EXCLUDED = 24;
 
 const REVIEW_FLAGS: ReviewFlag[] = [
   "수평 틀어짐",
@@ -26,12 +31,21 @@ const REJECT_REASONS = [
   "바닥 반사광이 과해서 톤이 튑니다",
 ];
 
-function labelPool(contentId: string): string[] {
-  const a = getAnalysis(contentId);
-  if (!a) return [];
+const cache = new Map<string, Photo[]>();
+
+function cacheKey(content: Content, analysis: ContentAnalysis) {
+  return [
+    content.id,
+    content.status,
+    content.retoucher ?? "-",
+    analysis.shotList.length,
+  ].join("|");
+}
+
+function labelPool(analysis: ContentAnalysis): string[] {
   const pool: string[] = [];
-  for (const item of a.shotList) {
-    const n = a.shotCounts[item.label] ?? 0;
+  for (const item of analysis.shotList) {
+    const n = analysis.shotCounts[item.label] ?? 0;
     if (n === 0) continue;
     // 촬영 장수에 비례해 라벨 분포를 만든다
     const weight = Math.max(1, Math.round(n / 2));
@@ -40,21 +54,25 @@ function labelPool(contentId: string): string[] {
   return pool;
 }
 
-let cache: Record<string, Photo[]> = {};
+export function buildPhotos(
+  content: Content,
+  analysis: ContentAnalysis,
+): Photo[] {
+  const key = cacheKey(content, analysis);
+  const hit = cache.get(key);
+  if (hit) return hit;
 
-export function getPhotos(contentId: string): Photo[] {
-  if (cache[contentId]) return cache[contentId];
-
-  const content = getContent(contentId);
-  const analysis = getAnalysis(contentId);
-  if (!content || !analysis || content.status === "촬영예정") {
-    cache = { ...cache, [contentId]: [] };
+  if (content.status === "촬영예정") {
+    cache.set(key, []);
     return [];
   }
 
-  const rng = makeRng(`${contentId}-photos`);
-  const pool = labelPool(contentId);
-  if (pool.length === 0) return [];
+  const rng = makeRng(`${content.id}-photos`);
+  const pool = labelPool(analysis);
+  if (pool.length === 0) {
+    cache.set(key, []);
+    return [];
+  }
 
   const retouchers = [content.retoucher, analysis.coRetoucher].filter(
     (r): r is string => Boolean(r),
@@ -81,7 +99,10 @@ export function getPhotos(contentId: string): Photo[] {
     }
 
     // AI 1차 검수 플래그는 보정 결과가 올라온 뒤에만 붙는다
-    const inReview = content.status === "보정중" || content.status === "검수" || content.status === "발행";
+    const inReview =
+      content.status === "보정중" ||
+      content.status === "검수" ||
+      content.status === "발행";
     const reviewFlags: ReviewFlag[] = [];
     if (selected && inReview && rng() < 0.17) {
       reviewFlags.push(pick(rng, REVIEW_FLAGS));
@@ -90,7 +111,10 @@ export function getPhotos(contentId: string): Photo[] {
     const retoucher = retouchers.length ? pick(rng, retouchers) : null;
 
     // 리터처가 둘이면 톤이 갈린다. 이 편차를 화면에서 보여주는 게 목적.
-    const base = retoucher && retouchers.length > 1 && retoucher === retouchers[1] ? 6180 : 5720;
+    const base =
+      retoucher && retouchers.length > 1 && retoucher === retouchers[1]
+        ? 6180
+        : 5720;
     const colorTempK = Math.round(base + (rng() - 0.5) * 380);
     const brightness = Math.round((0.44 + (rng() - 0.5) * 0.22) * 100) / 100;
 
@@ -121,11 +145,11 @@ export function getPhotos(contentId: string): Photo[] {
 
     const seq = String(i + 1).padStart(4, "0");
     photos.push({
-      id: `${contentId}-p${seq}`,
-      contentId,
-      previewUrl: `/photos/${contentId}/preview/${seq}.jpg`,
-      thumbUrl: `/photos/${contentId}/thumb/${seq}.jpg`,
-      rawPath: `s3://raw-cold/${contentId}/DSC${seq}.ARW`,
+      id: `${content.id}-p${seq}`,
+      contentId: content.id,
+      previewUrl: `/photos/${content.id}/preview/${seq}.jpg`,
+      thumbUrl: `/photos/${content.id}/thumb/${seq}.jpg`,
+      rawPath: `s3://raw-cold/${content.id}/DSC${seq}.ARW`,
       aiLabel: label,
       confidence: Math.round(confidence * 100) / 100,
       selected,
@@ -139,14 +163,14 @@ export function getPhotos(contentId: string): Photo[] {
     });
   }
 
-  cache = { ...cache, [contentId]: photos };
+  cache.set(key, photos);
   return photos;
 }
 
-export function getFlagCounts(contentId: string): Array<{ flag: ReviewFlag; count: number }> {
-  const photos = getPhotos(contentId).filter((p) => p.selected);
+export function flagCounts(photos: Photo[]): Array<{ flag: ReviewFlag; count: number }> {
   const map = new Map<ReviewFlag, number>();
   for (const p of photos) {
+    if (!p.selected) continue;
     for (const f of p.reviewFlags) map.set(f, (map.get(f) ?? 0) + 1);
   }
   return REVIEW_FLAGS.filter((f) => map.has(f)).map((f) => ({

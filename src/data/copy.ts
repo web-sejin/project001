@@ -14,32 +14,41 @@ export interface ChannelCopy {
   meta?: string;
 }
 
-function facilityWords(acc: Accommodation): string[] {
-  const f = acc.facilities;
-  const out: string[] = [];
-  if (f.pool) out.push("수영장");
-  if (f.bbq) out.push("바비큐");
-  if (f.breakfast) out.push("조식");
-  if (f.spa) out.push("스파");
-  if (f.pet) out.push("반려동물 동반");
-  if (f.outdoor) out.push("테라스");
-  return out;
-}
+/** 시설 항목 id → 카피에 쓸 짧은 단어 */
+const WORD: Record<string, string> = {
+  "f-pool": "수영장",
+  "f-breakfast": "조식",
+  "f-bbq": "바비큐",
+  "f-spa": "스파",
+  "f-pet": "반려동물 동반",
+  "f-outdoor": "테라스",
+};
 
-export function getChannelCopy(channelId: string, acc: Accommodation): ChannelCopy {
-  const f = acc.facilities;
-  const words = facilityWords(acc);
+export function getChannelCopy(
+  channelId: string,
+  acc: Accommodation,
+): ChannelCopy {
+  const has = (id: string) => acc.facilityIds.includes(id);
+  const words = acc.facilityIds.map((id) => WORD[id]).filter(Boolean);
   const roomLine =
-    f.roomTypes > 1 ? `객실 ${f.roomTypes}개 타입` : "독채 1개 타입";
+    acc.roomTypes > 1 ? `객실 ${acc.roomTypes}개 타입` : "독채 1개 타입";
 
   switch (channelId) {
     case "ch-own":
       return {
         title: `${acc.name} — 공간 안내`,
         body: [
-          `${acc.address}에 위치한 ${acc.type}입니다. ${roomLine}으로 운영되며, ${words.slice(0, 3).join(" · ")} 시설을 갖추고 있습니다.`,
+          `${acc.address}에 위치한 ${acc.type}입니다. ${roomLine}으로 운영되며, ${
+            words.slice(0, 3).join(" · ") || "기본 편의시설"
+          }을 갖추고 있습니다.`,
           "",
-          `객실은 전 타입 남향 배치로 오후 시간대 채광이 안정적입니다. ${f.pool ? "야외 수영장은 투숙객 전용으로 운영되며 이용 시간은 07:00~21:00입니다. " : ""}${f.breakfast ? "조식은 1층 다이닝에서 08:00~10:00에 제공됩니다. " : ""}${f.bbq ? "바비큐존은 사전 예약제로 운영합니다." : ""}`,
+          `객실은 전 타입 남향 배치로 오후 시간대 채광이 안정적입니다. ${
+            has("f-pool")
+              ? "야외 수영장은 투숙객 전용으로 운영되며 이용 시간은 07:00~21:00입니다. "
+              : ""
+          }${has("f-breakfast") ? "조식은 1층 다이닝에서 08:00~10:00에 제공됩니다. " : ""}${
+            has("f-bbq") ? "바비큐존은 사전 예약제로 운영합니다." : ""
+          }`,
           "",
           "체크인 15:00 / 체크아웃 11:00. 주차는 객실당 1대 무료입니다.",
         ].join("\n"),
@@ -69,7 +78,7 @@ export function getChannelCopy(channelId: string, acc: Accommodation): ChannelCo
           "",
           "· 9월 평일 예약 시 32% 할인",
           "· 2박 이상 예약 시 웰컴 드링크 제공",
-          f.breakfast ? "· 조식 2인 무료 포함" : "· 얼리 체크인 무료 (14:00)",
+          has("f-breakfast") ? "· 조식 2인 무료 포함" : "· 얼리 체크인 무료 (14:00)",
           "",
           "선착순 마감. 지금 예약하세요.",
         ].join("\n"),
@@ -78,12 +87,16 @@ export function getChannelCopy(channelId: string, acc: Accommodation): ChannelCo
 
     case "ch-insta":
       return {
-        title: `${acc.name}`,
+        title: acc.name,
         body: [
           `${acc.region}에서 보낸 하루.`,
-          f.pool ? "물에 비친 하늘을 한참 봤다." : "창을 열면 바로 그 계절이었다.",
+          has("f-pool")
+            ? "물에 비친 하늘을 한참 봤다."
+            : "창을 열면 바로 그 계절이었다.",
           "",
-          `#${acc.region} #${acc.type} #${acc.name.replace(/\s/g, "")} ${words.map((w) => `#${w.replace(/\s/g, "")}`).join(" ")} #국내여행 #숙소추천`,
+          `#${acc.region} #${acc.type} #${acc.name.replace(/\s/g, "")} ${words
+            .map((w) => `#${w.replace(/\s/g, "")}`)
+            .join(" ")} #국내여행 #숙소추천`,
         ].join("\n"),
         meta: "감성 짧은 문구 · 2~3줄 + 해시태그",
       };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Sidebar } from "@/components/Sidebar";
+import { MockStoreProvider } from "@/store/MockStore";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,10 +20,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full">
-        <div className="flex min-h-screen flex-col lg:flex-row">
-          <Sidebar />
-          <main className="min-w-0 flex-1">{children}</main>
-        </div>
+        <MockStoreProvider>
+          <div className="flex min-h-screen flex-col lg:flex-row">
+            <Sidebar />
+            <main className="min-w-0 flex-1">{children}</main>
+          </div>
+        </MockStoreProvider>
       </body>
     </html>
   );

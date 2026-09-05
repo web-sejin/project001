@@ -54,13 +54,13 @@ export function ContentDetail({
 
   return (
     <div>
-      <header className="border-b border-line px-4 pt-4 lg:px-6">
+      <header className="border-b border-line-strong bg-surface px-4 pt-4 lg:px-6">
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href="/pipeline"
+            href="/"
             className="text-badge text-fg-subtle transition-colors hover:text-fg-muted"
           >
-            파이프라인
+            현황판
           </Link>
           <span aria-hidden className="text-badge text-fg-subtle">
             /
@@ -84,6 +84,11 @@ export function ContentDetail({
           <Meta label="리터처" value={content.retoucher ?? "미배정"} />
           <Meta label="유형" value={acc.type} />
         </dl>
+
+        <p className="mt-2 max-w-3xl text-body leading-[19px] text-fg-muted">
+          촬영 건 하나를 처음부터 끝까지 다루는 화면입니다. 탭 4개가 업무 흐름의 각
+          단계이고, 지금 어느 단계까지 왔는지는 탭 옆 체크 표시로 보입니다.
+        </p>
 
         <nav className="mt-3 -mb-px flex gap-0.5 overflow-x-auto">
           {TABS.map((t, i) => {

@@ -213,7 +213,6 @@ export const CHANNELS: ChannelProfile[] = [
     id: "ch-own",
     name: "자사몰",
     ratio: "4:3",
-    ratioValue: 4 / 3,
     maxPhotos: 20,
     tone: "상세 설명형",
     publishMode: "자동 발행",
@@ -223,7 +222,6 @@ export const CHANNELS: ChannelProfile[] = [
     id: "ch-naver",
     name: "네이버 블로그",
     ratio: "1:1",
-    ratioValue: 1,
     maxPhotos: 10,
     tone: "검색 키워드 중심",
     publishMode: "수동 발행",
@@ -234,7 +232,6 @@ export const CHANNELS: ChannelProfile[] = [
     id: "ch-ota",
     name: "야놀자 · 여기어때",
     ratio: "16:9",
-    ratioValue: 16 / 9,
     maxPhotos: 15,
     tone: "프로모션 강조",
     publishMode: "수동 발행",
@@ -245,7 +242,6 @@ export const CHANNELS: ChannelProfile[] = [
     id: "ch-insta",
     name: "인스타그램",
     ratio: "4:5",
-    ratioValue: 4 / 5,
     maxPhotos: 10,
     tone: "감성 짧은 문구",
     publishMode: "심사 필요",
@@ -254,13 +250,15 @@ export const CHANNELS: ChannelProfile[] = [
   },
 ];
 
-export function getContent(id: string): Content | undefined {
-  return CONTENTS.find((c) => c.id === id);
-}
-
 /** 두 날짜 사이 일수. 목업 데이터가 문자열 날짜라 여기서만 Date를 쓴다. */
 export function daysBetween(from: string, to: string): number {
   const a = new Date(`${from}T00:00:00Z`).getTime();
   const b = new Date(`${to}T00:00:00Z`).getTime();
   return Math.round((b - a) / 86400000);
 }
+
+/** 촬영 작가 풀. 실제로는 인력 테이블에서 온다. */
+export const PHOTOGRAPHERS = ["박현우", "이도현", "정민석", "최유진"];
+
+/** 리터처 풀 */
+export const RETOUCHERS = ["김서연", "한지우", "유가온"];
