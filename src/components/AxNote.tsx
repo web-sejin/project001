@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { TIER_LABEL, axIdea, axKind, type Tier } from "@/data/ax";
 import { useStore } from "@/store/MockStore";
@@ -114,14 +113,11 @@ function Bubble({
         <span className="mt-2 block border-t border-line pt-1.5 text-badge leading-[16px] text-fg-subtle">
           <span className="font-semibold text-fg-muted">지금</span> {idea.asIs}
           <br />
-          <span className="font-semibold text-fg-muted">바뀌면</span> {idea.toBe}
+          <span className="font-semibold text-fg-muted">개선 후</span> {idea.toBe}
         </span>
 
         <span className="mt-1.5 block text-badge leading-[16px] text-fg-subtle">
-          {idea.why} ·{" "}
-          <Link href="/ax" className="underline underline-offset-2">
-            전체 아이디어
-          </Link>
+          {idea.why}
         </span>
       </span>
     </span>

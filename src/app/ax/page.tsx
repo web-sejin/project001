@@ -163,7 +163,7 @@ export default function AxPage() {
                             </dd>
                           </div>
                           <div className="flex gap-2">
-                            <dt className="w-14 shrink-0 text-fg-subtle">바뀌면</dt>
+                            <dt className="w-14 shrink-0 text-fg-subtle">개선 후</dt>
                             <dd className="min-w-0 flex-1 leading-[19px] text-fg">
                               {idea.toBe}
                             </dd>
@@ -302,8 +302,8 @@ export default function AxPage() {
                 집계해야 병목이 정말 보정 구간인지 확인됩니다.
               </li>
               <li className="px-4 py-2.5 leading-[19px] text-fg-muted">
-                촬영 현장의 네트워크 조건에 따라 누락 탐지를 현장에서 돌릴지, 복귀 후
-                돌릴지가 갈립니다. 어느 쪽이든 편집 단계보다는 빠릅니다.
+                이 목업은 촬영을 마치고 복귀한 뒤 사무실에서 업로드한다고 가정했습니다.
+                현장에서 바로 올릴 수 있는 조건이라면 발견 시점을 더 당길 수 있습니다.
               </li>
               <li className="px-4 py-2.5 leading-[19px] text-fg-muted">
                 이미 쓰는 시스템이 있다면 갈아엎지 않고 AI 처리 계층만 붙이는 쪽이

@@ -450,8 +450,8 @@ export function UploadVerify({ content }: { content: Content }) {
                       누락 {missing.length}건
                     </p>
                     <p className="mt-1 text-badge leading-[16px] text-fg-muted">
-                      {missing.map((m) => m.label).join(", ")} — 촬영 현장에서 이 화면을
-                      보면 바로 다시 찍을 수 있습니다.
+                      {missing.map((m) => m.label).join(", ")} — 편집에 들어가기 전에
+                      알 수 있습니다.
                     </p>
                   </div>
                 ) : (
