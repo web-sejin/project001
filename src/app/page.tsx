@@ -1,28 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { AttentionPanel } from "@/components/AttentionPanel";
 import { AxHighlight } from "@/components/AxNote";
 import { PageHeader } from "@/components/PageHeader";
 import { StageBoard } from "@/components/StageBoard";
-import { StatusBadge, StuckBadge } from "@/components/StatusBadge";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
-import {
-  STAGE_DURATIONS,
-  STUCK_WARN_DAYS,
-  TODAY,
-  daysBetween,
-} from "@/data/contents";
+import { STAGE_DURATIONS, TODAY, daysBetween } from "@/data/contents";
+import { findAttention } from "@/lib/attention";
 import { useStore } from "@/store/MockStore";
 
 export default function DashboardPage() {
   const store = useStore();
 
   const inProgress = store.contents.filter((c) => c.status !== "발행");
-  const stuck = store.contents
-    .filter((c) => c.stuckDays >= STUCK_WARN_DAYS && c.status !== "발행")
-    .sort((a, b) => b.stuckDays - a.stuckDays);
+  // 사람이 안 보고 있어도 걸리는 것들. 자동 점검 규칙이 잡아낸다.
+  const attention = store.contents.flatMap((c) =>
+    findAttention(c, store.publishProgress(c.id), store.alerts),
+  );
   const upcoming = store.contents.filter(
     (c) =>
       c.status === "촬영예정" &&
@@ -48,11 +44,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-px rounded-box border border-line-strong bg-line-strong lg:grid-cols-4">
           <Kpi label="진행 중" value={inProgress.length} unit="건" />
           <Kpi
-            label="정체"
-            value={stuck.length}
+            label="챙겨야 할 것"
+            value={attention.length}
             unit="건"
             tone="danger"
-            note={`${STUCK_WARN_DAYS}일 초과`}
+            note="자동 점검에 걸린 건"
           />
           <Kpi label="이번 주 촬영" value={upcoming.length} unit="건" />
           <Kpi
@@ -133,52 +129,7 @@ export default function DashboardPage() {
             </div>
           </Panel>
 
-          <div className="space-y-4">
-            <AxHighlight id="ax-08">
-            <Panel>
-              <PanelHeader
-                title="정체 알림"
-                description={`상태가 바뀐 지 ${STUCK_WARN_DAYS}일이 넘은 건`}
-                right={
-                  stuck.length > 0 ? (
-                    <Badge variant="danger">
-                      <span className="tnum">{stuck.length}</span>건
-                    </Badge>
-                  ) : (
-                    <Badge variant="success">없음</Badge>
-                  )
-                }
-              />
-              <ul className="divide-y divide-line">
-                {stuck.map((c) => {
-                  const acc = store.accommodationOf(c.accommodationId);
-                  return (
-                    <li key={c.id}>
-                      <Link
-                        href={`/content/${c.id}`}
-                        className="flex flex-wrap items-center gap-2 px-4 py-2.5 hover:bg-surface"
-                      >
-                        <span className="min-w-0 flex-1 truncate text-body font-medium text-fg">
-                          {acc?.name ?? "삭제된 숙소"}
-                        </span>
-                        <StatusBadge status={c.status} />
-                        <StuckBadge days={c.stuckDays} />
-                        <span className="w-16 shrink-0 text-right text-badge text-fg-muted">
-                          {c.retoucher ?? c.photographer}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-                {stuck.length === 0 ? (
-                  <li className="px-4 py-3 text-body text-fg-muted">
-                    정체된 건이 없습니다.
-                  </li>
-                ) : null}
-              </ul>
-            </Panel>
-            </AxHighlight>
-          </div>
+          <AttentionPanel />
         </div>
       </div>
     </div>

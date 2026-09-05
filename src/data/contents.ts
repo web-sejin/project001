@@ -1,11 +1,25 @@
-import type { ChannelProfile, Content, Publication } from "./types";
+import type {
+  AlertSettings,
+  ChannelProfile,
+  Content,
+  Publication,
+} from "./types";
 
 /** 목업 기준일. 화면이 항상 같은 상태로 보이도록 고정한다. */
 export const TODAY = "2026-09-05";
 
-/** 정체 기준일 */
+/** 정체 기준일 (설정 기본값) */
 export const STUCK_WARN_DAYS = 3;
 export const STUCK_DANGER_DAYS = 7;
+
+export const DEFAULT_ALERT_SETTINGS: AlertSettings = {
+  stuckWarnDays: STUCK_WARN_DAYS,
+  stuckDangerDays: STUCK_DANGER_DAYS,
+  uploadOverdueDays: 1,
+  assignWaitDays: 1,
+  notifyAt: "09:00",
+  channel: "슬랙",
+};
 
 export const PHOTOGRAPHERS = ["박현우", "이도현", "정민석", "최유진"];
 export const RETOUCHERS = ["김서연", "한지우", "유가온"];

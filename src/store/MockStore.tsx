@@ -13,6 +13,7 @@ import { buildAnalysis, type ContentAnalysis } from "@/data/analysis";
 import {
   CHANNELS,
   CONTENTS,
+  DEFAULT_ALERT_SETTINGS,
   PUBLICATIONS,
   TODAY,
   daysBetween,
@@ -21,6 +22,7 @@ import { FACILITY_DEFS, shotListFor } from "@/data/facilities";
 import { buildPhotos } from "@/data/photos";
 import type {
   Accommodation,
+  AlertSettings,
   Content,
   FacilityDef,
   Photo,
@@ -43,9 +45,13 @@ interface StoreValue {
   contents: Content[];
   publications: Publication[];
 
-  /** AX 개선 아이디어 주석 표시 여부 */
+  /** AX 관점 아이디어 주석 표시 여부 */
   axMode: boolean;
   setAxMode: (next: boolean) => void;
+
+  /** 알림 기준. 자동 점검이 이 값을 쓴다 */
+  alerts: AlertSettings;
+  updateAlerts: (patch: Partial<AlertSettings>) => void;
 
   addFacility: (input: Omit<FacilityDef, "id">) => FacilityDef;
   updateFacility: (id: string, patch: Partial<Omit<FacilityDef, "id">>) => void;
@@ -101,6 +107,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
   const [publications, setPublications] = useState<Publication[]>(PUBLICATIONS);
   const [uploads, setUploads] = useState<Record<string, UploadedPhoto[]>>({});
   const [axMode, setAxMode] = useState(true);
+  const [alerts, setAlerts] = useState<AlertSettings>(DEFAULT_ALERT_SETTINGS);
 
   const addFacility = useCallback((input: Omit<FacilityDef, "id">) => {
     const created: FacilityDef = { ...input, id: `f-${Date.now()}` };
@@ -199,6 +206,11 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateAlerts = useCallback(
+    (patch: Partial<AlertSettings>) => setAlerts((prev) => ({ ...prev, ...patch })),
+    [],
+  );
+
   const value = useMemo<StoreValue>(() => {
     const accommodationOf = (id: string) => accommodations.find((a) => a.id === id);
     const contentOf = (id: string) => contents.find((c) => c.id === id);
@@ -221,6 +233,8 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
       publications,
       axMode,
       setAxMode,
+      alerts,
+      updateAlerts,
       addFacility,
       updateFacility,
       removeFacility,
@@ -259,6 +273,8 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     publications,
     uploads,
     axMode,
+    alerts,
+    updateAlerts,
     addFacility,
     updateFacility,
     removeFacility,

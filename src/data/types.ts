@@ -193,6 +193,27 @@ export interface UploadedPhoto {
   label: string;
 }
 
+/**
+ * 알림 기준.
+ *
+ * 며칠이 지나면 알릴지가 코드에 박혀 있으면 팀마다 다른 리듬에 못 맞춘다.
+ * 자동화가 실무에서 쓸 만해지려면 기준을 사람이 정할 수 있어야 한다.
+ */
+export interface AlertSettings {
+  /** 같은 단계에 며칠 머물면 주의 */
+  stuckWarnDays: number;
+  /** 며칠 넘으면 위험 */
+  stuckDangerDays: number;
+  /** 촬영일이 며칠 지나도록 사진이 없으면 알림 */
+  uploadOverdueDays: number;
+  /** 업로드 후 며칠 안에 리터처가 안 정해지면 알림 */
+  assignWaitDays: number;
+  /** 알림 발송 시각 */
+  notifyAt: string;
+  /** 알림 채널 */
+  channel: string;
+}
+
 export type PublishStatus = "미발행" | "발행완료";
 
 export interface Publication {

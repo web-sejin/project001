@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { AxHighlight } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
@@ -59,7 +58,6 @@ export function ShootTab({
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-4">
-        <AxHighlight id="ax-01">
         <Panel>
           <PanelHeader
             title="촬영 필수 컷 체크리스트"
@@ -174,7 +172,6 @@ export function ShootTab({
             )}
           </div>
         </Panel>
-        </AxHighlight>
       </div>
 
       <Panel>
