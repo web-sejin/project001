@@ -155,7 +155,8 @@ export default function AccommodationsPage() {
                 label="객실 타입 수"
                 help={
                   <>
-                    이 숫자만큼 객실·욕실 컷이 반복 전개됩니다. 객실 1타입당 몇 컷인지는{" "}
+                    이 숫자를 곱해 침실·욕실 필요 장수가 정해집니다. 타입 1개당 몇
+                    컷인지는{" "}
                     <Link
                       href="/facilities"
                       className="font-medium text-ai underline underline-offset-2"

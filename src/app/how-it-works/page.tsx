@@ -60,6 +60,11 @@ const TOOLS = [
   { task: "스마트 크롭", tier: "전용 모델", how: "객체 검출 후 피사체 영역 계산" },
   { task: "눈감음 검출", tier: "전용 모델", how: "얼굴 랜드마크" },
   { task: "공간 라벨링", tier: "LLM 비전", how: "숙소마다 공간 구성이 달라 고정 클래스로 부족" },
+  {
+    task: "객실 등급 · 호수 구분",
+    tier: "불가",
+    how: "같은 숙소의 침실 두 장에 시각적 차이가 없다. 체크리스트에서 뺐다",
+  },
   { task: "촬영 누락 판단", tier: "LLM 비전", how: "라벨링 결과 + 체크리스트 대조" },
   { task: "채널별 카피 생성", tier: "LLM", how: "채널 톤 프로필 기반 초안" },
   { task: "담당자 배정 · 리마인드", tier: "AI 아님", how: "조건 분기 + 스케줄러" },
@@ -113,6 +118,7 @@ const EFFECTS = [
 ];
 
 function TierBadge({ tier }: { tier: string }) {
+  if (tier === "불가") return <Badge variant="danger">판정 불가</Badge>;
   if (tier === "AI 아님") return <Badge variant="neutral">AI 아님</Badge>;
   if (tier === "LLM 비전" || tier === "LLM") return <Badge variant="ai">{tier}</Badge>;
   return <Badge variant="outline">{tier}</Badge>;
@@ -268,7 +274,7 @@ export default function HowItWorksPage() {
           <h2 className="text-section font-semibold text-fg">3. 수단 선정 근거</h2>
           <p className="mt-1 text-body text-fg-muted">
             &ldquo;AI가 처리합니다&rdquo;로 뭉뚱그리지 않습니다. 수단이 세 층위로
-            나뉘고, 어떤 것은 아예 AI가 아닙니다.
+            나뉘고, 어떤 것은 아예 AI가 아니며, 애초에 판정이 불가능한 것도 있습니다.
           </p>
           <Panel className="mt-3">
             <div className="overflow-x-auto">

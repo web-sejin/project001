@@ -7,13 +7,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
-import { ROOM_TYPE_NAMES } from "@/data/facilities";
 import { useStore } from "@/store/MockStore";
 import type { FacilityDef, ShotRule } from "@/data/types";
 
 const SCOPE_HELP: Record<FacilityDef["scope"], string> = {
   공통: "모든 숙소에 무조건 적용됩니다.",
-  객실: "숙소의 객실 타입 수만큼 반복 전개됩니다.",
+  객실: "객실 타입 1개당 필요한 컷 수입니다. 숙소의 객실 타입 수를 곱해 합계로 관리합니다.",
   선택: "숙소가 보유를 체크했을 때만 적용됩니다.",
 };
 
@@ -303,12 +302,14 @@ export default function FacilitiesPage() {
               </table>
 
               <p className="mt-2 text-badge leading-[16px] text-fg-muted">
-                필수 해제(권장)로 두면 그 컷이 없어도 촬영 완료로 봅니다.
+                필수 해제(권장)로 두면 그 컷이 없어도 촬영 완료로 봅니다. 컷 이름은
+                사진만 보고 판정할 수 있는 공간 유형이어야 합니다.
                 {editing.scope === "객실" ? (
                   <>
                     {" "}
-                    객실 규칙은 숙소의 객실 타입 수만큼 반복됩니다. 3타입이면{" "}
-                    {ROOM_TYPE_NAMES.map((n) => n).join(" · ")} 순으로 전개됩니다.
+                    객실 규칙은 타입 1개 기준입니다. 3타입 숙소면 침실 5컷이 15컷으로
+                    합산됩니다. 타입별로 행을 나누지 않는 이유는 AI가 같은 숙소의 침실
+                    두 장을 보고 어느 타입인지 가릴 수 없기 때문입니다.
                   </>
                 ) : null}
               </p>

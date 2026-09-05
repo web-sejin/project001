@@ -102,10 +102,10 @@ const OVERRIDES: Record<
     rawPending: false,
     missingLabels: [
       {
-        label: "디럭스룸 욕실",
+        label: "욕실",
         confidence: "high",
         reason:
-          "객실 2타입 중 디럭스룸 욕실 컷이 없습니다. 재촬영 2회가 여기서 발생했습니다",
+          "욕실로 분류된 컷이 한 장도 없습니다. 재촬영 2회가 여기서 발생했습니다",
       },
     ],
   },

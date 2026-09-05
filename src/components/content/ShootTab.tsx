@@ -87,7 +87,7 @@ export function ShootTab({
         <Panel>
           <PanelHeader
             title="필수 컷 체크리스트"
-            description="숙소 유형 템플릿과 시설 정보에서 자동 생성됩니다. 이 숙소만의 예외는 직접 추가·제외할 수 있습니다."
+            description="시설 정보에서 자동 생성됩니다. 항목은 전부 사진만 보고 판정할 수 있는 공간 유형입니다."
             right={
               <>
                 <Badge variant="outline">
@@ -99,9 +99,10 @@ export function ShootTab({
                 <Badge variant="neutral">
                   자동 생성됨
                   <InfoTip align="right">
-                    AI가 아닙니다. 숙소 등록 시 입력한 시설 정보(객실 타입 수, 수영장,
-                    조식, 바비큐 등)를 규칙으로 연결해 만든 목록입니다. 이미 가진
-                    데이터를 이어 붙여 입력 자체를 없앤 사례입니다.
+                    AI가 아닙니다. 숙소 등록 시 입력한 시설 정보를 규칙으로 연결해 만든
+                    목록입니다. 항목 이름은 사진만 보고 판정 가능한 공간 유형으로
+                    제한했습니다. 객실 등급이나 번호는 이미지에 근거가 없어 넣지
+                    않았습니다.
                   </InfoTip>
                 </Badge>
               </>

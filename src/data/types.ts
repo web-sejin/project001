@@ -72,6 +72,10 @@ export interface Accommodation {
 /** 시설 마스터에서 전개된 촬영 체크리스트 한 줄 */
 export interface ShotItem {
   id: string;
+  /**
+   * 컷 이름. 사진만 보고 판정 가능한 공간 유형이어야 한다.
+   * 등급명이나 객실 번호는 여기 들어갈 수 없다. 이미지에 근거가 없기 때문이다.
+   */
   label: string;
   minCount: number;
   isRequired: boolean;
@@ -116,6 +120,7 @@ export interface Photo {
   previewUrl: string;
   thumbUrl: string;
   rawPath: string;
+  /** AI가 판정한 공간 유형 */
   aiLabel: string;
   confidence: number;
   selected: boolean;
