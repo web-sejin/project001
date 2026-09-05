@@ -1,14 +1,15 @@
-import type { ChannelProfile, Content } from "./types";
+import type { ChannelProfile, Content, Publication } from "./types";
 
-/**
- * 목업 기준일. 실제 시스템이라면 서버 시각을 쓴다.
- * 여기서는 화면이 항상 같은 상태로 보이도록 고정한다.
- */
+/** 목업 기준일. 화면이 항상 같은 상태로 보이도록 고정한다. */
 export const TODAY = "2026-09-05";
 
-/** 정체 일수 기준 */
+/** 정체 기준일 */
 export const STUCK_WARN_DAYS = 3;
 export const STUCK_DANGER_DAYS = 7;
+
+export const PHOTOGRAPHERS = ["박현우", "이도현", "정민석", "최유진"];
+export const RETOUCHERS = ["김서연", "한지우", "유가온"];
+export const OPERATORS = ["김운영", "박마케팅"];
 
 export const CONTENTS: Content[] = [
   {
@@ -21,7 +22,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-24",
     stuckDays: 12,
     reshootCount: 1,
-    preDepartureCheck: false,
   },
   {
     id: "c-02",
@@ -33,7 +33,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-02",
     stuckDays: 3,
     reshootCount: 0,
-    preDepartureCheck: true,
   },
   {
     id: "c-03",
@@ -45,7 +44,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-04",
     stuckDays: 1,
     reshootCount: 0,
-    preDepartureCheck: true,
   },
   {
     id: "c-04",
@@ -57,7 +55,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-27",
     stuckDays: 0,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
   {
     id: "c-05",
@@ -69,7 +66,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-30",
     stuckDays: 0,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
   {
     id: "c-06",
@@ -81,7 +77,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-28",
     stuckDays: 8,
     reshootCount: 1,
-    preDepartureCheck: false,
   },
   {
     id: "c-07",
@@ -93,7 +88,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-03",
     stuckDays: 2,
     reshootCount: 0,
-    preDepartureCheck: true,
   },
   {
     id: "c-08",
@@ -105,7 +99,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-29",
     stuckDays: 0,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
   {
     id: "c-09",
@@ -117,7 +110,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-04",
     stuckDays: 1,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
   {
     id: "c-10",
@@ -129,7 +121,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-01",
     stuckDays: 4,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
   {
     id: "c-11",
@@ -141,7 +132,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-21",
     stuckDays: 0,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
   {
     id: "c-12",
@@ -153,7 +143,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-01",
     stuckDays: 0,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
   {
     id: "c-13",
@@ -165,7 +154,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-27",
     stuckDays: 9,
     reshootCount: 2,
-    preDepartureCheck: false,
   },
   {
     id: "c-14",
@@ -177,7 +165,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-03",
     stuckDays: 2,
     reshootCount: 0,
-    preDepartureCheck: true,
   },
   {
     id: "c-15",
@@ -189,7 +176,6 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-02",
     stuckDays: 0,
     reshootCount: 0,
-    preDepartureCheck: false,
   },
 ];
 
@@ -204,29 +190,15 @@ export const STAGE_DURATIONS = [
   { stage: "발행", days: 0.5 },
 ];
 
-/**
- * 채널 프로필.
- * publishMode / apiNote 는 각 채널의 실제 API 정책을 조사한 결과다.
- */
+/** 채널 프로필. 규격과 문구 톤만 관리한다. */
 export const CHANNELS: ChannelProfile[] = [
-  {
-    id: "ch-own",
-    name: "자사몰",
-    ratio: "4:3",
-    maxPhotos: 20,
-    tone: "상세 설명형",
-    publishMode: "자동 발행",
-    apiNote: "내부 API. 시스템이 직접 등록한다.",
-  },
+  { id: "ch-own", name: "자사몰", ratio: "4:3", maxPhotos: 20, tone: "상세 설명형" },
   {
     id: "ch-naver",
     name: "네이버 블로그",
     ratio: "1:1",
     maxPhotos: 10,
     tone: "검색 키워드 중심",
-    publishMode: "수동 발행",
-    apiNote:
-      "글쓰기 API가 2020년 5월 종료됐다 (광고성 대량 발행 문제). 자동 발행 경로가 없어 패키지를 내려받아 사람이 올린다.",
   },
   {
     id: "ch-ota",
@@ -234,9 +206,6 @@ export const CHANNELS: ChannelProfile[] = [
     ratio: "16:9",
     maxPhotos: 15,
     tone: "프로모션 강조",
-    publishMode: "수동 발행",
-    apiNote:
-      "공개 API가 없다. 파트너 연동 계약 또는 채널 매니저 경유가 필요해 협의 전까지는 수동 발행.",
   },
   {
     id: "ch-insta",
@@ -244,9 +213,71 @@ export const CHANNELS: ChannelProfile[] = [
     ratio: "4:5",
     maxPhotos: 10,
     tone: "감성 짧은 문구",
-    publishMode: "심사 필요",
-    apiNote:
-      "Graph API로 가능하지만 비즈니스/크리에이터 계정 + 페이스북 페이지 연결 + Meta 앱 심사가 선행돼야 한다. 24시간당 100건 제한.",
+  },
+];
+
+/**
+ * 채널 게시 기록.
+ *
+ * 발행 단계에서 관리하는 건 자동 등록이 아니라 이 표다.
+ * 어느 채널에 올렸는지, 링크가 뭔지, 누가 언제 올렸는지.
+ */
+export const PUBLICATIONS: Publication[] = [
+  {
+    contentId: "c-04",
+    channelId: "ch-own",
+    status: "발행완료",
+    url: "https://trip11.co.kr/stay/1042",
+    publishedAt: "2026-08-27",
+    publishedBy: "김운영",
+  },
+  {
+    contentId: "c-04",
+    channelId: "ch-naver",
+    status: "발행완료",
+    url: "https://blog.naver.com/trip11/223812940117",
+    publishedAt: "2026-08-27",
+    publishedBy: "김운영",
+  },
+  {
+    contentId: "c-04",
+    channelId: "ch-ota",
+    status: "발행완료",
+    url: "https://www.yanolja.com/stay/3001284",
+    publishedAt: "2026-08-28",
+    publishedBy: "김운영",
+  },
+  {
+    contentId: "c-04",
+    channelId: "ch-insta",
+    status: "발행완료",
+    url: "https://www.instagram.com/p/C9xK2mLpQ4a/",
+    publishedAt: "2026-08-28",
+    publishedBy: "박마케팅",
+  },
+  {
+    contentId: "c-11",
+    channelId: "ch-own",
+    status: "발행완료",
+    url: "https://trip11.co.kr/stay/0987",
+    publishedAt: "2026-08-21",
+    publishedBy: "김운영",
+  },
+  {
+    contentId: "c-11",
+    channelId: "ch-naver",
+    status: "발행완료",
+    url: "https://blog.naver.com/trip11/223798451220",
+    publishedAt: "2026-08-21",
+    publishedBy: "김운영",
+  },
+  {
+    contentId: "c-11",
+    channelId: "ch-ota",
+    status: "발행완료",
+    url: "https://www.yanolja.com/stay/2998710",
+    publishedAt: "2026-08-22",
+    publishedBy: "김운영",
   },
 ];
 
@@ -256,9 +287,3 @@ export function daysBetween(from: string, to: string): number {
   const b = new Date(`${to}T00:00:00Z`).getTime();
   return Math.round((b - a) / 86400000);
 }
-
-/** 촬영 작가 풀. 실제로는 인력 테이블에서 온다. */
-export const PHOTOGRAPHERS = ["박현우", "이도현", "정민석", "최유진"];
-
-/** 리터처 풀 */
-export const RETOUCHERS = ["김서연", "한지우", "유가온"];

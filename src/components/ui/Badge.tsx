@@ -28,15 +28,3 @@ export function Badge({
     </span>
   );
 }
-
-/** AI가 만든 산출물임을 알리는 배지. 화면 전체에서 같은 색을 쓴다. */
-export function AiBadge({ label = "AI 결과 (모의)" }: { label?: string }) {
-  return (
-    <Badge variant="ai">
-      <span aria-hidden className="text-[9px] leading-none">
-        ◆
-      </span>
-      {label}
-    </Badge>
-  );
-}

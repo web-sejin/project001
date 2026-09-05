@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { AxNote } from "@/components/AxNote";
+import { FacilityRulesDialog } from "@/components/FacilityRulesDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { ScheduleForm } from "@/components/ScheduleForm";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -39,6 +41,7 @@ export default function AccommodationsPage() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [scheduling, setScheduling] = useState(false);
   const [createdContentId, setCreatedContentId] = useState<string | null>(null);
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   const selectable = store.facilities.filter((f) => f.scope === "선택");
   const roomFacility = store.facilities.find((f) => f.scope === "객실");
@@ -52,13 +55,6 @@ export default function AccommodationsPage() {
   );
   const previewCuts = preview.reduce((s, i) => s + i.minCount, 0);
 
-  const closeForm = () => {
-    setForm(null);
-    setSavedId(null);
-    setCreatedContentId(null);
-    setScheduling(false);
-  };
-
   const open = (acc: Accommodation | null) => {
     setForm(acc ? { ...acc } : { ...BLANK });
     setSavedId(null);
@@ -67,7 +63,7 @@ export default function AccommodationsPage() {
   };
 
   const save = () => {
-    if (!form || !form.name.trim()) return;
+    if (!form?.name.trim()) return;
     const saved = store.saveAccommodation({
       ...form,
       name: form.name.trim(),
@@ -77,33 +73,32 @@ export default function AccommodationsPage() {
     setSavedId(saved.id);
   };
 
-  const toggleFacility = (id: string) =>
-    setForm((f) =>
-      f
-        ? {
-            ...f,
-            facilityIds: f.facilityIds.includes(id)
-              ? f.facilityIds.filter((x) => x !== id)
-              : [...f.facilityIds, id],
-          }
-        : f,
-    );
-
   const isNew = form !== null && !store.accommodations.some((a) => a.id === form.id);
 
-  /* ------------------------- 등록 · 수정 화면 ------------------------- */
+  /* --------------------------- 등록 · 수정 --------------------------- */
   if (form) {
     return (
       <div>
         <PageHeader
           title={isNew ? "숙소 등록" : form.name || "숙소 수정"}
           purpose="보유한 시설을 고르면 촬영 필수 컷 목록이 자동으로 만들어집니다."
-          right={<Button onClick={closeForm}>목록으로</Button>}
         />
 
         <div className="grid gap-4 p-4 lg:p-6 xl:grid-cols-[minmax(0,1fr)_400px]">
           <Panel>
-            <PanelHeader title="숙소 정보" />
+            <PanelHeader
+              title="숙소 정보"
+              right={
+                <Button
+                  onClick={() => {
+                    setForm(null);
+                    setSavedId(null);
+                  }}
+                >
+                  목록으로
+                </Button>
+              }
+            />
             <div className="space-y-4 p-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="숙소명">
@@ -154,22 +149,11 @@ export default function AccommodationsPage() {
               <Field
                 label="객실 수"
                 help={
-                  <>
-                    객실 1개당 몇 컷인지는{" "}
-                    <Link
-                      href="/facilities"
-                      className="font-medium text-ai underline underline-offset-2"
-                    >
-                      시설 관리 &gt; {roomFacility?.label ?? "객실"}
-                    </Link>
-                    에서 정하고, 여기에 객실 수를 곱합니다
-                    {roomFacility
-                      ? ` (현재 ${roomFacility.rules
-                          .map((r) => `${r.label} ${r.minCount}컷`)
-                          .join(", ")})`
-                      : ""}
-                    .
-                  </>
+                  roomFacility
+                    ? `객실 1개당 ${roomFacility.rules
+                        .map((r) => `${r.label} ${r.minCount}컷`)
+                        .join(", ")}. 이 숫자를 곱해 필요 장수가 정해집니다.`
+                    : undefined
                 }
               >
                 <div className="flex gap-1">
@@ -190,21 +174,7 @@ export default function AccommodationsPage() {
                 </div>
               </Field>
 
-              <Field
-                label="보유 시설"
-                help={
-                  <>
-                    선택지는{" "}
-                    <Link
-                      href="/facilities"
-                      className="font-medium text-ai underline underline-offset-2"
-                    >
-                      시설 관리
-                    </Link>
-                    에서 정의한 항목입니다.
-                  </>
-                }
-              >
+              <Field label="보유 시설">
                 <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                   {selectable.map((f) => (
                     <label
@@ -218,7 +188,14 @@ export default function AccommodationsPage() {
                       <input
                         type="checkbox"
                         checked={form.facilityIds.includes(f.id)}
-                        onChange={() => toggleFacility(f.id)}
+                        onChange={() =>
+                          setForm({
+                            ...form,
+                            facilityIds: form.facilityIds.includes(f.id)
+                              ? form.facilityIds.filter((x) => x !== f.id)
+                              : [...form.facilityIds, f.id],
+                          })
+                        }
                         className="h-3.5 w-3.5 accent-[#6940A5]"
                       />
                       {f.label}
@@ -236,61 +213,64 @@ export default function AccommodationsPage() {
                     <span className="text-body font-medium text-success">
                       저장됐습니다
                     </span>
-                    <Button onClick={() => setScheduling(true)}>
-                      촬영 일정 등록
-                    </Button>
+                    <Button onClick={() => setScheduling(true)}>촬영 일정 등록</Button>
                   </>
                 ) : null}
               </div>
             </div>
           </Panel>
 
-          <Panel>
-            <PanelHeader
-              title="촬영 필수 컷 목록"
-              description="시설 관리의 컷 규칙에 객실 수와 보유 시설을 적용한 결과입니다."
-              right={
-                <Badge variant="ai">
-                  <span className="tnum">{preview.length}</span>항목 ·{" "}
-                  <span className="tnum">{previewCuts}</span>컷
-                </Badge>
-              }
-            />
-            <table className="w-full border-collapse text-body">
-              <thead>
-                <tr className="bg-surface text-left">
-                  <th className="border-b border-line-strong px-2.5 py-2 text-badge font-semibold text-fg-muted">
-                    컷 이름
-                  </th>
-                  <th className="border-b border-line-strong px-2.5 py-2 text-badge font-semibold text-fg-muted">
-                    가져온 곳
-                  </th>
-                  <th className="border-b border-line-strong px-2.5 py-2 text-right text-badge font-semibold text-fg-muted">
-                    최소 장수
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {preview.map((s) => (
-                  <tr key={s.id} className="border-b border-line">
-                    <td className="px-2.5 py-1.5 text-fg">
-                      {s.label}
-                      {!s.isRequired ? (
-                        <span className="ml-1.5 text-badge text-fg-subtle">권장</span>
-                      ) : null}
-                    </td>
-                    <td className="px-2.5 py-1.5 text-badge text-fg-muted">
-                      {facilityLabel(s.facilityId)}
-                    </td>
-                    <td className="tnum px-2.5 py-1.5 text-right text-fg-muted">
-                      {s.minCount}컷
-                    </td>
+          <div className="space-y-4">
+            <Panel>
+              <PanelHeader
+                title="촬영 필수 컷 목록"
+                description="컷 규칙에 객실 수와 보유 시설을 적용한 결과입니다."
+                right={
+                  <Badge variant="outline">
+                    <span className="tnum">{preview.length}</span>항목 ·{" "}
+                    <span className="tnum">{previewCuts}</span>컷
+                  </Badge>
+                }
+              />
+              <table className="w-full border-collapse text-body">
+                <thead>
+                  <tr className="bg-surface text-left">
+                    <Th>컷 이름</Th>
+                    <Th>가져온 곳</Th>
+                    <Th className="text-right">최소 장수</Th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </Panel>
+                </thead>
+                <tbody>
+                  {preview.map((s) => (
+                    <tr key={s.id} className="border-b border-line">
+                      <td className="px-2.5 py-1.5 text-fg">
+                        {s.label}
+                        {!s.isRequired ? (
+                          <span className="ml-1.5 text-badge text-fg-subtle">권장</span>
+                        ) : null}
+                      </td>
+                      <td className="px-2.5 py-1.5 text-badge text-fg-muted">
+                        {facilityLabel(s.facilityId)}
+                      </td>
+                      <td className="tnum px-2.5 py-1.5 text-right text-fg-muted">
+                        {s.minCount}컷
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="border-t border-line px-4 py-2">
+                <Button size="sm" onClick={() => setRulesOpen(true)}>
+                  컷 규칙 수정
+                </Button>
+              </div>
+            </Panel>
+
+            <AxNote id="ax-01" />
+          </div>
         </div>
+
+        <FacilityRulesDialog open={rulesOpen} onClose={() => setRulesOpen(false)} />
 
         <Dialog
           open={scheduling}
@@ -321,9 +301,6 @@ export default function AccommodationsPage() {
                   >
                     현황판에서 보기
                   </Link>
-                  <Button variant="quiet" onClick={() => setCreatedContentId(null)}>
-                    하나 더 등록
-                  </Button>
                 </div>
               </div>
             ) : savedId ? (
@@ -346,13 +323,16 @@ export default function AccommodationsPage() {
         title="숙소 관리"
         purpose="촬영 대상 숙소를 등록하고 보유 시설을 관리합니다."
         right={
-          <Button variant="primary" onClick={() => open(null)}>
-            + 새 숙소 등록
-          </Button>
+          <>
+            <Button onClick={() => setRulesOpen(true)}>촬영 필수 컷 규칙</Button>
+            <Button variant="primary" onClick={() => open(null)}>
+              + 새 숙소 등록
+            </Button>
+          </>
         }
       />
 
-      <div className="p-4 lg:p-6">
+      <div className="space-y-4 p-4 lg:p-6">
         <Panel>
           <PanelHeader
             title="숙소 목록"
@@ -408,9 +388,7 @@ export default function AccommodationsPage() {
                       <td className="px-2.5 py-1.5">
                         {latest ? (
                           <span className="flex items-center gap-1.5">
-                            <span className="tnum text-fg-muted">
-                              {shoots.length}건
-                            </span>
+                            <span className="tnum text-fg-muted">{shoots.length}건</span>
                             <StatusBadge status={latest.status} />
                           </span>
                         ) : (
@@ -424,7 +402,11 @@ export default function AccommodationsPage() {
             </table>
           </div>
         </Panel>
+
+        <AxNote id="ax-01" />
       </div>
+
+      <FacilityRulesDialog open={rulesOpen} onClose={() => setRulesOpen(false)} />
     </div>
   );
 }

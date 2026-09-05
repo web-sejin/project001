@@ -4,10 +4,9 @@ import { Badge } from "@/components/ui/Badge";
 import type { Photo } from "@/data/types";
 
 /**
- * 보정 톤 일관성 검사.
+ * 보정 톤 일관성.
  *
  * 리터처가 여러 명이면 같은 숙소 사진의 색온도가 갈린다. 실무 고질병이다.
- * 사진마다 측정값(색온도·밝기)을 뿌려서 어느 쪽이 튀는지 눈으로 보게 한다.
  * 측정은 RGB 평균 비교 — 순수 연산이지 AI가 아니다.
  */
 export function ToneChart({ photos }: { photos: Photo[] }) {
@@ -24,19 +23,19 @@ export function ToneChart({ photos }: { photos: Photo[] }) {
 
   const byRetoucher = retouchers.map((r) => {
     const list = points.filter((p) => p.retoucher === r);
-    const avg = Math.round(list.reduce((s, p) => s + p.colorTempK, 0) / list.length);
-    return { retoucher: r, count: list.length, avg };
+    return {
+      retoucher: r,
+      count: list.length,
+      avg: Math.round(list.reduce((s, p) => s + p.colorTempK, 0) / list.length),
+    };
   });
 
   const spread =
-    byRetoucher.length > 1
-      ? Math.abs(byRetoucher[0].avg - byRetoucher[1].avg)
-      : 0;
+    byRetoucher.length > 1 ? Math.abs(byRetoucher[0].avg - byRetoucher[1].avg) : 0;
 
   return (
     <div>
-      <div className="relative h-32 rounded-box border border-line bg-surface">
-        {/* 기준선 */}
+      <div className="relative h-28 rounded-box border border-line bg-surface">
         <div
           className="absolute inset-y-0 w-px bg-line-strong"
           style={{ left: `${((median - minT) / (maxT - minT)) * 100}%` }}
@@ -60,14 +59,11 @@ export function ToneChart({ photos }: { photos: Photo[] }) {
             />
           );
         })}
-        <span className="absolute bottom-1 left-2 text-badge text-fg-subtle tnum">
+        <span className="tnum absolute bottom-1 left-2 text-badge text-fg-subtle">
           {minT}K
         </span>
-        <span className="absolute right-2 bottom-1 text-badge text-fg-subtle tnum">
+        <span className="tnum absolute right-2 bottom-1 text-badge text-fg-subtle">
           {maxT}K
-        </span>
-        <span className="absolute top-1 left-2 text-badge text-fg-subtle">
-          밝기 높음
         </span>
       </div>
 
@@ -93,7 +89,7 @@ export function ToneChart({ photos }: { photos: Photo[] }) {
         )}
         {spread > 300 ? (
           <Badge variant="warn">
-            리터처 간 평균 색온도 <span className="tnum">{spread}K</span> 차이
+            리터처 간 <span className="tnum">{spread}K</span> 차이
           </Badge>
         ) : null}
       </div>
@@ -101,8 +97,7 @@ export function ToneChart({ photos }: { photos: Photo[] }) {
       {spread > 300 ? (
         <p className="mt-2 text-badge leading-[16px] text-fg-muted">
           두 리터처의 톤 기준이 다릅니다. 발행 세트에 섞이면 상세페이지에서 바로 티가
-          납니다. 승인 전에 기준값(5,800K)으로 맞추도록 재의뢰하는 것이 이 검사의
-          목적입니다.
+          납니다.
         </p>
       ) : null}
     </div>

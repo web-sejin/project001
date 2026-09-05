@@ -2,34 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Toggle } from "@/components/ui/Toggle";
+import { useStore } from "@/store/MockStore";
 
-interface NavItem {
-  href: string;
-  label: string;
-}
-
-const GROUPS: Array<{ title: string; items: NavItem[] }> = [
-  {
-    title: "운영",
-    items: [
-      { href: "/", label: "현황판" },
-      { href: "/calendar", label: "촬영 캘린더" },
-    ],
-  },
-  {
-    title: "기준 정보",
-    items: [
-      { href: "/facilities", label: "1. 시설 관리" },
-      { href: "/accommodations", label: "2. 숙소 관리" },
-    ],
-  },
-  {
-    title: "문서",
-    items: [{ href: "/how-it-works", label: "처리 구조" }],
-  },
+const NAV = [
+  { href: "/", label: "현황판" },
+  { href: "/calendar", label: "촬영 캘린더" },
+  { href: "/accommodations", label: "숙소 관리" },
+  { href: "/ax", label: "AX 개선 아이디어" },
 ];
-
-const FLAT = GROUPS.flatMap((g) => g.items);
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/" || pathname.startsWith("/content");
@@ -38,6 +19,7 @@ function isActive(pathname: string, href: string) {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { axMode, setAxMode } = useStore();
 
   return (
     <>
@@ -47,37 +29,30 @@ export function Sidebar() {
           <p className="mt-0.5 text-badge text-nav-muted">트립일레븐 내부 도구</p>
         </div>
 
-        <nav className="flex-1 overflow-y-auto pb-2">
-          {GROUPS.map((group) => (
-            <div key={group.title} className="mb-4 px-2">
-              <p className="px-2.5 pb-1.5 text-badge font-semibold tracking-wide text-nav-muted">
-                {group.title}
-              </p>
-              {group.items.map((item) => {
-                const active = isActive(pathname, item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    className={`mb-0.5 block rounded-box px-2.5 py-1.5 text-body ${
-                      active
-                        ? "bg-white font-semibold text-ai"
-                        : "text-nav-fg hover:bg-nav-soft"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
+        <nav className="flex-1 px-2">
+          {NAV.map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`mb-0.5 block rounded-box px-2.5 py-1.5 text-body ${
+                  active
+                    ? "bg-white font-semibold text-ai"
+                    : "text-nav-fg hover:bg-nav-soft"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
+        <AxToggle axMode={axMode} setAxMode={setAxMode} />
+
         <div className="border-t border-white/15 p-3">
-          <p className="text-badge font-semibold text-white">
-            더미 데이터 기반 목업
-          </p>
+          <p className="text-badge font-semibold text-white">더미 데이터 기반 목업</p>
           <p className="mt-1 text-badge leading-[15px] text-nav-muted">
             등록·수정은 화면에서 반영되지만 서버가 없어 새로고침하면 초기값으로
             돌아갑니다.
@@ -85,14 +60,22 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* 모바일 — 촬영 현장에서 폰으로 쓰는 시나리오를 위해 유지 */}
+      {/* 모바일 */}
       <div className="sticky top-0 z-30 bg-nav lg:hidden">
-        <div className="flex items-baseline justify-between px-3 pt-2.5">
+        <div className="flex items-center justify-between gap-2 px-3 pt-2.5">
           <p className="text-ui font-semibold text-white">콘텐츠 제작 운영</p>
-          <span className="text-badge text-nav-muted">목업</span>
+          <label className="flex items-center gap-1.5 text-badge text-nav-fg">
+            AX
+            <Toggle
+              id="ax-mode-mobile"
+              label="AX 개선 아이디어 표시"
+              checked={axMode}
+              onChange={setAxMode}
+            />
+          </label>
         </div>
         <nav className="thin-scroll flex gap-1 overflow-x-auto px-2 py-2">
-          {FLAT.map((item) => {
+          {NAV.map((item) => {
             const active = isActive(pathname, item.href);
             return (
               <Link
@@ -112,5 +95,38 @@ export function Sidebar() {
         </nav>
       </div>
     </>
+  );
+}
+
+/**
+ * 이 목업의 핵심 장치.
+ *
+ * 끄면 지금 쓰고 있을 법한 관리 화면이고, 켜면 어디에 무엇을 얹을지가 보인다.
+ * As-Is 와 To-Be 를 한 화면에서 비교할 수 있게 하는 것이 목적이다.
+ */
+function AxToggle({
+  axMode,
+  setAxMode,
+}: {
+  axMode: boolean;
+  setAxMode: (n: boolean) => void;
+}) {
+  return (
+    <div className="mx-2 mb-3 rounded-box bg-nav-soft p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-body font-semibold text-white">AX 개선 아이디어</span>
+        <Toggle
+          id="ax-mode"
+          label="AX 개선 아이디어 표시"
+          checked={axMode}
+          onChange={setAxMode}
+        />
+      </div>
+      <p className="mt-1.5 text-badge leading-[15px] text-nav-muted">
+        {axMode
+          ? "각 단계에 AI · 자동화를 어디에 넣을지 표시하고 있습니다."
+          : "지금 쓰고 있을 법한 관리 화면입니다. 켜면 개선 지점이 보입니다."}
+      </p>
+    </div>
   );
 }

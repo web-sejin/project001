@@ -1,220 +1,382 @@
 "use client";
 
-import { useState } from "react";
-import { AiBadge, Badge } from "@/components/ui/Badge";
-import { InfoTip } from "@/components/ui/InfoTip";
+import { useMemo, useState } from "react";
+import { AiBadge, AxNote } from "@/components/AxNote";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Dialog } from "@/components/ui/Dialog";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
-import type { ChannelCopy } from "@/data/copy";
-import type { ChannelProfile, Photo, PublishMode } from "@/data/types";
+import { CHANNELS, OPERATORS, TODAY } from "@/data/contents";
+import { getChannelCopy } from "@/data/copy";
+import { useStore } from "@/store/MockStore";
+import type { Accommodation, Content, Photo, Publication } from "@/data/types";
 
-const MODE_VARIANT: Record<PublishMode, "success" | "warn" | "neutral"> = {
-  "자동 발행": "success",
-  "심사 필요": "warn",
-  "수동 발행": "neutral",
-};
-
+/**
+ * 발행 탭.
+ *
+ * 여기서 관리하는 건 자동 등록이 아니라 게시 기록이다.
+ * 어느 채널에 올렸는지, 링크가 뭔지, 누가 언제 올렸는지.
+ * 채널별 변환 결과(이미지 세트·카피 초안)는 사람이 붙여넣을 재료로 그 아래에 둔다.
+ */
 export function PublishTab({
-  channels,
-  copies,
+  content,
+  acc,
   photos,
-  approvedCount,
 }: {
-  channels: ChannelProfile[];
-  copies: Record<string, ChannelCopy>;
+  content: Content;
+  acc: Accommodation;
   photos: Photo[];
-  approvedCount: number;
 }) {
-  const [activeId, setActiveId] = useState(channels[0].id);
-  const [drafts, setDrafts] = useState<Record<string, string>>(() =>
-    Object.fromEntries(Object.entries(copies).map(([k, v]) => [k, v.body])),
-  );
-  const [published, setPublished] = useState<Record<string, boolean>>({});
+  const store = useStore();
+  const { axMode } = useStore();
 
-  const active = channels.find((c) => c.id === activeId) ?? channels[0];
-  const copy = copies[active.id];
-  const set = photos.slice(0, active.maxPhotos);
+  const approved = useMemo(
+    () => photos.filter((p) => p.selected && p.approvalStatus === "승인"),
+    [photos],
+  );
+  const pubs = store.publicationsOf(content.id);
+  const pubOf = (channelId: string) => pubs.find((p) => p.channelId === channelId);
+  const done = pubs.filter((p) => p.status === "발행완료").length;
+
+  const [editing, setEditing] = useState<string | null>(null);
+  const [activeChannel, setActiveChannel] = useState(CHANNELS[0].id);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  const active = CHANNELS.find((c) => c.id === activeChannel) ?? CHANNELS[0];
+  const copy = getChannelCopy(active.id, acc);
+  const set = approved.slice(0, active.maxPhotos);
 
   return (
     <div className="space-y-4">
       <Panel>
         <PanelHeader
-          title="채널별 변환"
-          description={`승인된 원본 ${approvedCount}장에서 채널 규격에 맞춰 자동 생성됩니다.`}
-          right={<AiBadge label="크롭 · 카피 (모의)" />}
+          title="채널별 게시 현황"
+          description="어느 채널에 올렸고 링크가 무엇인지 기록합니다."
+          right={
+            <Badge variant={done === CHANNELS.length ? "success" : "warn"}>
+              <span className="tnum">
+                {done}/{CHANNELS.length}
+              </span>{" "}
+              채널 발행
+            </Badge>
+          }
         />
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-body">
+          <table className="w-full min-w-[720px] border-collapse text-body">
             <thead>
-              <tr className="bg-surface text-left text-fg-muted">
-                <th className="border-b border-line px-2.5 py-2 font-medium">채널</th>
-                <th className="border-b border-line px-2.5 py-2 font-medium">비율</th>
-                <th className="border-b border-line px-2.5 py-2 font-medium">장수</th>
-                <th className="border-b border-line px-2.5 py-2 font-medium">문구 톤</th>
-                <th className="border-b border-line px-2.5 py-2 font-medium">발행 방식</th>
+              <tr className="bg-surface text-left">
+                <Th>채널</Th>
+                <Th className="w-24">상태</Th>
+                <Th className="w-28">발행일</Th>
+                <Th className="w-24">담당</Th>
+                <Th>링크</Th>
+                <Th className="w-24 text-right">관리</Th>
               </tr>
             </thead>
             <tbody>
-              {channels.map((ch) => (
-                <tr
-                  key={ch.id}
-                  onClick={() => setActiveId(ch.id)}
-                  className={`h-9 cursor-pointer ${
-                    ch.id === activeId ? "bg-surface" : "hover:bg-surface/60"
-                  }`}
-                >
-                  <td className="border-b border-line px-2.5 font-medium text-fg">
-                    {ch.name}
-                  </td>
-                  <td className="tnum border-b border-line px-2.5 text-fg-muted">
-                    {ch.ratio}
-                  </td>
-                  <td className="tnum border-b border-line px-2.5 text-fg-muted">
-                    {ch.maxPhotos}장
-                  </td>
-                  <td className="border-b border-line px-2.5 text-fg-muted">
-                    {ch.tone}
-                  </td>
-                  {/* 근거는 아래 발행 패널에 본문으로 나온다.
-                      가로 스크롤 컨테이너 안에서는 툴팁이 잘리므로 여기엔 두지 않는다 */}
-                  <td className="border-b border-line px-2.5">
-                    <Badge variant={MODE_VARIANT[ch.publishMode]}>
-                      {ch.publishMode}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
+              {CHANNELS.map((ch) => {
+                const pub = pubOf(ch.id);
+                const published = pub?.status === "발행완료";
+                return (
+                  <tr key={ch.id} className="border-b border-line">
+                    <td className="px-2.5 py-2">
+                      <span className="font-semibold text-fg">{ch.name}</span>
+                      <span className="tnum mt-px block text-badge text-fg-subtle">
+                        {ch.ratio} · {ch.maxPhotos}장 · {ch.tone}
+                      </span>
+                    </td>
+                    <td className="px-2.5 py-2">
+                      {published ? (
+                        <Badge variant="success">발행완료</Badge>
+                      ) : (
+                        <Badge variant="neutral">미발행</Badge>
+                      )}
+                    </td>
+                    <td className="tnum px-2.5 py-2 text-fg-muted">
+                      {pub?.publishedAt ?? "—"}
+                    </td>
+                    <td className="px-2.5 py-2 text-fg-muted">
+                      {pub?.publishedBy ?? "—"}
+                    </td>
+                    <td className="max-w-0 px-2.5 py-2">
+                      {published && pub?.url ? (
+                        <a
+                          href={pub.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block truncate text-ai underline underline-offset-2"
+                        >
+                          {pub.url}
+                        </a>
+                      ) : (
+                        <span className="text-fg-subtle">—</span>
+                      )}
+                    </td>
+                    <td className="px-2.5 py-2 text-right">
+                      <Button size="sm" onClick={() => setEditing(ch.id)}>
+                        {published ? "수정" : "발행 등록"}
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
         <div className="border-t border-line bg-surface px-4 py-2.5">
           <p className="text-badge leading-[16px] text-fg-muted">
-            자동 발행이 막힌 채널이 있어도 이 시스템의 가치는 대부분 유지됩니다. 진짜
-            반복 노동은 업로드 버튼을 누르는 것이 아니라{" "}
-            <span className="text-fg">
-              채널마다 사진을 자르고 고르고 문구를 쓰는 것
-            </span>
-            이고, 그 부분은 API 없이도 전부 자동화됩니다.
+            채널마다 발행 방식이 다릅니다. 자사몰은 내부 시스템에서 바로 등록하고,
+            나머지는 각 채널에서 게시한 뒤 링크를 여기에 남깁니다.
           </p>
         </div>
       </Panel>
 
-      <div className="flex flex-wrap gap-1">
-        {channels.map((ch) => (
-          <button
-            key={ch.id}
-            type="button"
-            onClick={() => setActiveId(ch.id)}
-            className={`rounded-box border px-2.5 py-1 text-body transition-colors ${
-              ch.id === activeId
-                ? "border-line-strong bg-surface font-medium text-fg"
-                : "border-line text-fg-muted hover:text-fg"
-            }`}
-          >
-            {ch.name}
-            <span className="tnum ml-1.5 text-fg-subtle">{ch.ratio}</span>
-          </button>
-        ))}
-      </div>
+      {approved.length === 0 ? (
+        <Panel>
+          <div className="p-4 text-body text-fg-muted">
+            아직 승인된 컷이 없습니다. 검수에서 승인이 끝나면 채널별 변환 결과가 여기에
+            생성됩니다.
+          </div>
+        </Panel>
+      ) : axMode ? (
+        <>
+          <AxNote id="ax-06" />
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="flex flex-wrap gap-1">
+            {CHANNELS.map((ch) => (
+              <button
+                key={ch.id}
+                type="button"
+                onClick={() => setActiveChannel(ch.id)}
+                className={`rounded-box border px-2.5 py-1 text-body ${
+                  ch.id === activeChannel
+                    ? "border-ai bg-ai-bg font-semibold text-ai"
+                    : "border-line-strong text-fg-muted hover:text-fg"
+                }`}
+              >
+                {ch.name}
+                <span className="tnum ml-1.5 text-fg-subtle">{ch.ratio}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+            <Panel>
+              <PanelHeader
+                title={`${active.name} · ${active.ratio}`}
+                description={`채널 규격 ${active.maxPhotos}장 중 ${set.length}장 생성됨`}
+                right={<AiBadge label="피사체 인식 크롭" />}
+              />
+              <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-3 lg:grid-cols-4">
+                {set.map((p) => (
+                  <PhotoBox
+                    key={p.id}
+                    id={p.id}
+                    label={p.aiLabel}
+                    aspect={active.ratio.replace(":", "/")}
+                    variant="retouched"
+                  />
+                ))}
+              </div>
+            </Panel>
+
+            <div className="space-y-4">
+              <Panel className="border-ai-line">
+                <PanelHeader
+                  title="카피 초안"
+                  description={copy.meta}
+                  right={<AiBadge label="AI 초안" />}
+                />
+                <div className="space-y-2 p-4">
+                  <p className="text-body font-semibold text-fg">{copy.title}</p>
+                  <textarea
+                    rows={11}
+                    value={drafts[active.id] ?? copy.body}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({ ...prev, [active.id]: e.target.value }))
+                    }
+                    className="w-full resize-y rounded-box border border-line-strong p-2.5 text-body leading-[19px] outline-none focus:border-ai"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      navigator.clipboard?.writeText(drafts[active.id] ?? copy.body)
+                    }
+                  >
+                    복사
+                  </Button>
+                </div>
+              </Panel>
+
+              <AxNote id="ax-07" />
+            </div>
+          </div>
+        </>
+      ) : (
         <Panel>
           <PanelHeader
-            title={`${active.name} · ${active.ratio}`}
-            description={`채널 규격 ${active.maxPhotos}장 중 ${set.length}장 생성됨`}
-            right={
-              <Badge variant="ai">
-                피사체 인식 크롭 적용
-                <InfoTip align="right">
-                  객체 검출로 피사체 영역을 계산한 뒤 그 영역을 유지하며 자릅니다.
-                  단순 중앙 크롭이 아닙니다. 전용 모델이면 충분해 LLM을 쓰지 않습니다.
-                </InfoTip>
-              </Badge>
-            }
+            title="승인된 사진"
+            description={`${approved.length}장. 각 채널 규격에 맞춰 내보냅니다.`}
           />
-          <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-3 lg:grid-cols-4">
-            {set.map((p) => (
-              <PhotoBox
-                key={p.id}
-                id={p.id}
-                label={p.aiLabel}
-                aspect={active.ratio.replace(":", "/")}
-                variant="retouched"
-              />
+          <div className="grid grid-cols-3 gap-2 p-4 sm:grid-cols-4 lg:grid-cols-8">
+            {approved.map((p) => (
+              <PhotoBox key={p.id} id={p.id} label={p.aiLabel} variant="retouched" />
             ))}
           </div>
         </Panel>
+      )}
 
-        <div className="space-y-4">
-          <Panel className="border-ai/25">
-            <PanelHeader
-              title="카피 초안"
-              description={copy?.meta}
-              right={<AiBadge label="AI 초안" />}
+      <PublishDialog
+        contentId={content.id}
+        channelId={editing}
+        existing={editing ? pubOf(editing) : undefined}
+        onClose={() => setEditing(null)}
+        onSave={(pub) => {
+          store.savePublication(pub);
+          setEditing(null);
+        }}
+      />
+    </div>
+  );
+}
+
+function PublishDialog({
+  contentId,
+  channelId,
+  existing,
+  onClose,
+  onSave,
+}: {
+  contentId: string;
+  channelId: string | null;
+  existing?: Publication;
+  onClose: () => void;
+  onSave: (pub: Publication) => void;
+}) {
+  const channel = CHANNELS.find((c) => c.id === channelId);
+  const [url, setUrl] = useState(existing?.url ?? "");
+  const [at, setAt] = useState(existing?.publishedAt ?? TODAY);
+  const [by, setBy] = useState(existing?.publishedBy ?? OPERATORS[0]);
+
+  // 다른 채널을 열면 입력값을 그 채널 것으로 바꾼다
+  const key = `${contentId}:${channelId}`;
+  const [lastKey, setLastKey] = useState(key);
+  if (key !== lastKey) {
+    setLastKey(key);
+    setUrl(existing?.url ?? "");
+    setAt(existing?.publishedAt ?? TODAY);
+    setBy(existing?.publishedBy ?? OPERATORS[0]);
+  }
+
+  if (!channel || !channelId) return null;
+
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      title={`${channel.name} 발행 등록`}
+      description="해당 채널에 게시한 뒤 링크를 남기면 현황판에도 반영됩니다."
+      width="520px"
+      footer={
+        <>
+          {existing?.status === "발행완료" ? (
+            <Button
+              variant="danger"
+              onClick={() =>
+                onSave({
+                  contentId,
+                  channelId,
+                  status: "미발행",
+                  url: "",
+                  publishedAt: null,
+                  publishedBy: null,
+                })
+              }
+            >
+              발행 취소
+            </Button>
+          ) : null}
+          <Button onClick={onClose}>취소</Button>
+          <Button
+            variant="primary"
+            disabled={!url.trim()}
+            onClick={() =>
+              onSave({
+                contentId,
+                channelId,
+                status: "발행완료",
+                url: url.trim(),
+                publishedAt: at,
+                publishedBy: by,
+              })
+            }
+          >
+            발행 완료로 저장
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3 p-4">
+        <label className="block">
+          <span className="mb-1 block text-badge font-semibold text-fg-muted">
+            게시 링크
+          </span>
+          <input
+            autoFocus
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://"
+            className="w-full rounded-box border border-line-strong px-2 py-1.5 text-body outline-none focus:border-ai"
+          />
+        </label>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-badge font-semibold text-fg-muted">
+              발행일
+            </span>
+            <input
+              type="date"
+              value={at}
+              onChange={(e) => setAt(e.target.value)}
+              className="tnum w-full rounded-box border border-line-strong px-2 py-1.5 text-body outline-none focus:border-ai"
             />
-            <div className="space-y-2 p-4">
-              <p className="text-body font-medium text-fg">{copy?.title}</p>
-              <textarea
-                rows={12}
-                value={drafts[active.id] ?? ""}
-                onChange={(e) =>
-                  setDrafts((prev) => ({ ...prev, [active.id]: e.target.value }))
-                }
-                className="w-full resize-y rounded-box border border-line-strong p-2.5 text-body leading-[19px] outline-none focus:border-fg-subtle"
-              />
-              <p className="text-badge leading-[16px] text-fg-subtle">
-                LLM이 채널 톤 프로필에 맞춰 생성한 초안입니다. 사람이 고쳐서 확정합니다.
-              </p>
-            </div>
-          </Panel>
-
-          <Panel>
-            <PanelHeader title="발행" />
-            <div className="space-y-3 p-4">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <Badge variant={MODE_VARIANT[active.publishMode]}>
-                  {active.publishMode}
-                </Badge>
-                {published[active.id] ? (
-                  <Badge variant="success">발행 완료</Badge>
-                ) : (
-                  <Badge variant="neutral">발행 대기</Badge>
-                )}
-              </div>
-
-              <p className="text-badge leading-[16px] text-fg-muted">
-                {active.apiNote}
-              </p>
-
-              {active.publishMode === "자동 발행" ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPublished((prev) => ({ ...prev, [active.id]: !prev[active.id] }))
-                  }
-                  className="w-full rounded-box border border-line-strong bg-surface px-2 py-1.5 text-body font-medium text-fg"
-                >
-                  {published[active.id] ? "발행 취소" : "발행하기"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="w-full rounded-box border border-line-strong bg-surface px-2 py-1.5 text-body font-medium text-fg"
-                >
-                  규격 맞춤 패키지 다운로드
-                </button>
-              )}
-
-              {active.publishMode !== "자동 발행" ? (
-                <p className="text-badge leading-[16px] text-fg-subtle">
-                  {active.ratio}로 변환된 이미지 {active.maxPhotos}장과 카피 초안을 zip
-                  으로 묶어 내려받습니다. 사람은 붙여넣기만 하면 됩니다.
-                </p>
-              ) : null}
-            </div>
-          </Panel>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-badge font-semibold text-fg-muted">
+              담당자
+            </span>
+            <select
+              value={by}
+              onChange={(e) => setBy(e.target.value)}
+              className="w-full rounded-box border border-line-strong bg-canvas px-2 py-1.5 text-body outline-none focus:border-ai"
+            >
+              {OPERATORS.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </div>
-    </div>
+    </Dialog>
+  );
+}
+
+function Th({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <th
+      className={`border-b border-line-strong px-2.5 py-2 text-badge font-semibold text-fg-muted ${className}`}
+    >
+      {children}
+    </th>
   );
 }
