@@ -95,10 +95,11 @@ export default function PipelinePage() {
                           ) : null}
                         </div>
 
-                        <p className="mt-1 text-badge text-fg-subtle">
+                        <p className="mt-1 flex items-baseline justify-between gap-2 text-badge text-fg-subtle">
                           <span className="tnum">{content.shootDate}</span>
-                          <span className="mx-1.5 text-line-strong">|</span>
-                          {content.retoucher ?? content.photographer}
+                          <span className="truncate">
+                            {content.retoucher ?? content.photographer}
+                          </span>
                         </p>
 
                         {progress.total > 0 ? (
