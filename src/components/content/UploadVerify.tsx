@@ -126,7 +126,7 @@ export function UploadVerify({ content }: { content: Content }) {
     files.filter((f) => verdicts[f.id]?.reason === reason).length;
   const recommended = files.filter((f) => verdicts[f.id]?.reason == null);
 
-  /* ---- 대조: 배열 비교. 추천으로 남은 컷만 센다 ---- */
+  /* ---- 대조: 라벨별 장수를 세서 체크리스트의 필요 수량과 견준다 ---- */
   const counts = useMemo(() => {
     const map: Record<string, number> = {};
     for (const f of recommended) map[f.label] = (map[f.label] ?? 0) + 1;
