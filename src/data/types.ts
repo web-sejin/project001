@@ -214,6 +214,18 @@ export interface AlertSettings {
   channel: string;
 }
 
+/**
+ * 리터처가 올린 보정본.
+ * originalId 가 null 이면 아직 어느 원본의 보정본인지 못 찾은 상태다.
+ */
+export interface RetouchedPhoto {
+  id: string;
+  contentId: string;
+  name: string;
+  url: string;
+  originalId: string | null;
+}
+
 export type PublishStatus = "미발행" | "발행완료";
 
 export interface Publication {

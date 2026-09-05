@@ -10,6 +10,7 @@ import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { AssignPanel, RetouchFlow } from "./AssignPanel";
 import { CompareView, type Pin } from "./CompareView";
+import { RetouchedUpload } from "./RetouchedUpload";
 import { ToneChart } from "./ToneChart";
 import { flagCounts } from "@/data/photos";
 import { useStore } from "@/store/MockStore";
@@ -35,7 +36,8 @@ export function RetouchTab({
   content: Content;
   photos: Photo[];
 }) {
-  const { axMode } = useStore();
+  const store = useStore();
+  const { axMode } = store;
   const pool = useMemo(() => photos.filter((p) => p.selected), [photos]);
 
   const [approvals, setApprovals] = useState<Record<string, ApprovalStatus>>({});
@@ -82,6 +84,15 @@ export function RetouchTab({
   const statusOf = (p: Photo): ApprovalStatus => approvals[p.id] ?? p.approvalStatus;
   const flags = flagCounts(pool);
   const selected = pool.find((p) => p.id === selectedId) ?? null;
+
+  // 올린 보정본이 있으면 비교 뷰에 실제 사진을 띄운다
+  const uploads = store.uploadsOf(content.id);
+  const retouched = store.retouchedOf(content.id);
+  const pairFor = (originalId: string) => {
+    const after = retouched.find((r) => r.originalId === originalId);
+    const before = uploads.find((u) => u.id === originalId);
+    return { beforeUrl: before?.url, afterUrl: after?.url };
+  };
 
   const visible = pool.filter((p) => {
     if (filter === "전체") return true;
@@ -256,6 +267,7 @@ export function RetouchTab({
                   label={selected.aiLabel}
                   pins={pins[selected.id] ?? []}
                   pinMode={pinMode}
+                  {...pairFor(selected.id)}
                   onAddPin={(x, y) =>
                     setPins((prev) => {
                       const list = prev[selected.id] ?? [];
@@ -373,6 +385,15 @@ export function RetouchTab({
           ) : null}
         </div>
       </Panel>
+
+      <RetouchedUpload
+        content={content}
+        photos={photos}
+        onPick={(originalId) => {
+          setSelectedId(originalId);
+          setReason("");
+        }}
+      />
     </div>
   );
 }

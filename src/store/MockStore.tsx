@@ -27,6 +27,7 @@ import type {
   FacilityDef,
   Photo,
   Publication,
+  RetouchedPhoto,
   ShotItem,
   UploadedPhoto,
 } from "@/data/types";
@@ -73,6 +74,16 @@ interface StoreValue {
   addUploads: (contentId: string, photos: UploadedPhoto[]) => void;
   setUploadLabel: (contentId: string, photoId: string, label: string) => void;
   removeUpload: (contentId: string, photoId: string) => void;
+
+  /** 리터처가 올린 보정본 */
+  retouchedOf: (contentId: string) => RetouchedPhoto[];
+  addRetouched: (contentId: string, photos: RetouchedPhoto[]) => void;
+  setRetouchedOriginal: (
+    contentId: string,
+    photoId: string,
+    originalId: string | null,
+  ) => void;
+  removeRetouched: (contentId: string, photoId: string) => void;
   clearUploads: (contentId: string) => void;
 
   accommodationOf: (id: string) => Accommodation | undefined;
@@ -108,6 +119,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
   const [publications, setPublications] = useState<Publication[]>(PUBLICATIONS);
   const [uploads, setUploads] = useState<Record<string, UploadedPhoto[]>>({});
   const [axMode, setAxMode] = useState(true);
+  const [retouched, setRetouched] = useState<Record<string, RetouchedPhoto[]>>({});
   const [alerts, setAlerts] = useState<AlertSettings>(DEFAULT_ALERT_SETTINGS);
 
   const addFacility = useCallback((input: Omit<FacilityDef, "id">) => {
@@ -216,6 +228,33 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const addRetouched = useCallback((contentId: string, photos: RetouchedPhoto[]) => {
+    setRetouched((prev) => ({
+      ...prev,
+      [contentId]: [...(prev[contentId] ?? []), ...photos],
+    }));
+  }, []);
+
+  const setRetouchedOriginal = useCallback(
+    (contentId: string, photoId: string, originalId: string | null) =>
+      setRetouched((prev) => ({
+        ...prev,
+        [contentId]: (prev[contentId] ?? []).map((p) =>
+          p.id === photoId ? { ...p, originalId } : p,
+        ),
+      })),
+    [],
+  );
+
+  const removeRetouched = useCallback((contentId: string, photoId: string) => {
+    setRetouched((prev) => {
+      const list = prev[contentId] ?? [];
+      const target = list.find((p) => p.id === photoId);
+      if (target) URL.revokeObjectURL(target.url);
+      return { ...prev, [contentId]: list.filter((p) => p.id !== photoId) };
+    });
+  }, []);
+
   const updateAlerts = useCallback(
     (patch: Partial<AlertSettings>) => setAlerts((prev) => ({ ...prev, ...patch })),
     [],
@@ -257,6 +296,10 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
       setUploadLabel,
       removeUpload,
       clearUploads,
+      retouchedOf: (contentId) => retouched[contentId] ?? [],
+      addRetouched,
+      setRetouchedOriginal,
+      removeRetouched,
       accommodationOf,
       contentOf,
       contentsOfAccommodation: (accId) =>
@@ -283,6 +326,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     contents,
     publications,
     uploads,
+    retouched,
     axMode,
     alerts,
     updateAlerts,
@@ -297,6 +341,9 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     setUploadLabel,
     removeUpload,
     clearUploads,
+    addRetouched,
+    setRetouchedOriginal,
+    removeRetouched,
   ]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

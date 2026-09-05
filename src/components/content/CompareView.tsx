@@ -19,12 +19,18 @@ export function CompareView({
   pins,
   onAddPin,
   pinMode,
+  beforeUrl,
+  afterUrl,
 }: {
   photoId: string;
   label: string;
   pins: Pin[];
   onAddPin: (x: number, y: number) => void;
   pinMode: boolean;
+  /** 올린 원본. 없으면 자리표시자를 그린다 */
+  beforeUrl?: string;
+  /** 올린 보정본 */
+  afterUrl?: string;
 }) {
   const [split, setSplit] = useState(50);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -43,20 +49,38 @@ export function CompareView({
         }}
         className={`relative select-none ${pinMode ? "cursor-crosshair" : ""}`}
       >
-        <PhotoBox id={photoId} label={label} variant="retouched" aspect="3/2" />
+        {afterUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={afterUrl}
+            alt={`${label} 보정본`}
+            className="aspect-[3/2] w-full rounded-box border border-line object-cover"
+          />
+        ) : (
+          <PhotoBox id={photoId} label={label} variant="retouched" aspect="3/2" />
+        )}
 
         <div className="absolute inset-0 overflow-hidden" style={{ width: `${split}%` }}>
           <div
             className="h-full"
             style={{ width: `${(100 / Math.max(1, split)) * 100}%` }}
           >
-            <PhotoBox
-              id={photoId}
-              label={label}
-              variant="raw"
-              aspect="3/2"
-              className="h-full w-full rounded-r-none"
-            />
+            {beforeUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={beforeUrl}
+                alt={`${label} 원본`}
+                className="h-full w-full rounded-box rounded-r-none border border-line object-cover"
+              />
+            ) : (
+              <PhotoBox
+                id={photoId}
+                label={label}
+                variant="raw"
+                aspect="3/2"
+                className="h-full w-full rounded-r-none"
+              />
+            )}
           </div>
         </div>
 
