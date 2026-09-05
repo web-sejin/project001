@@ -75,13 +75,12 @@ export function PublishTab({
                   <td className="border-b border-line px-2.5 text-fg-muted">
                     {ch.tone}
                   </td>
+                  {/* 근거는 아래 발행 패널에 본문으로 나온다.
+                      가로 스크롤 컨테이너 안에서는 툴팁이 잘리므로 여기엔 두지 않는다 */}
                   <td className="border-b border-line px-2.5">
-                    <span className="flex items-center gap-1.5">
-                      <Badge variant={MODE_VARIANT[ch.publishMode]}>
-                        {ch.publishMode}
-                      </Badge>
-                      <InfoTip align="right">{ch.apiNote}</InfoTip>
-                    </span>
+                    <Badge variant={MODE_VARIANT[ch.publishMode]}>
+                      {ch.publishMode}
+                    </Badge>
                   </td>
                 </tr>
               ))}

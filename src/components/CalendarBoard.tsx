@@ -98,7 +98,7 @@ export function CalendarBoard({
             return (
               <div
                 key={i}
-                className={`min-h-[104px] border-r border-b border-line p-1.5 last:border-r-0 ${
+                className={`min-h-[104px] border-r border-b border-line p-1.5 [&:nth-child(7n)]:border-r-0 ${
                   date ? "" : "bg-surface/50"
                 } ${isToday ? "bg-surface" : ""}`}
               >

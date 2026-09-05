@@ -33,7 +33,8 @@ export default function DashboardPage() {
       />
 
       <div className="p-4 lg:p-6">
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-box border border-line bg-line lg:grid-cols-4">
+        {/* overflow-hidden 을 주면 KPI 툴팁이 잘린다 */}
+        <div className="grid grid-cols-2 gap-px rounded-box border border-line bg-line lg:grid-cols-4">
           <Kpi label="진행 중 콘텐츠" value={inProgress.length} unit="건" />
           <Kpi
             label="정체 건수"
@@ -195,7 +196,7 @@ function Kpi({
   const color =
     tone === "danger" ? "text-danger" : tone === "warn" ? "text-warn" : "text-fg";
   return (
-    <div className="bg-canvas p-4">
+    <div className="rounded-box bg-canvas p-4">
       <div className="flex items-center gap-1">
         <p className="text-badge text-fg-muted">{label}</p>
         {tip ? <InfoTip>{tip}</InfoTip> : null}
