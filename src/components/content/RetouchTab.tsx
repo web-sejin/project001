@@ -50,13 +50,33 @@ export function RetouchTab({
   const [filter, setFilter] = useState<Filter>("전체");
   const [selectedId, setSelectedId] = useState<string | null>(pool[0]?.id ?? null);
   const [retouchedOpen, setRetouchedOpen] = useState(false);
+  // 닫기와 완료가 무슨 뜻인지 모호해서, 되돌릴 수 없거나 애매한 경우엔 한 번 묻는다
+  const [confirm, setConfirm] = useState<null | "cancel" | "partial">(null);
+
+  const uploads = store.uploadsOf(content.id);
+  const retouched = store.retouchedOf(content.id);
 
   // 보정본이 원본과 다 짝지어져야 검수로 넘길 수 있다.
   // 짝을 못 찾은 게 남아 있으면 어떤 컷을 승인하는지 모르는 채로 넘어가게 된다.
-  const retouchedFiles = store.retouchedOf(content.id);
-  const unmatchedCount = retouchedFiles.filter((r) => !r.originalId).length;
+  const unmatchedCount = retouched.filter((r) => !r.originalId).length;
+  const matchedCount = retouched.length - unmatchedCount;
+  // 원본 수. 촬영 사진을 직접 올렸으면 그게 기준이다
+  const originalCount = uploads.length > 0 ? uploads.length : pool.length;
   const canComplete =
-    retouchedFiles.length > 0 && unmatchedCount === 0 && content.status === "보정중";
+    retouched.length > 0 && unmatchedCount === 0 && content.status === "보정중";
+
+  const closeRetouched = () => {
+    setRetouchedOpen(false);
+    setConfirm(null);
+  };
+  const completeRetouch = () => {
+    store.updateContent(content.id, {
+      status: "검수",
+      statusChangedAt: TODAY,
+      stuckDays: 0,
+    });
+    closeRetouched();
+  };
 
   if (content.status === "촬영예정") {
     return (
@@ -96,8 +116,6 @@ export function RetouchTab({
   const selected = pool.find((p) => p.id === selectedId) ?? null;
 
   // 올린 보정본이 있으면 비교 뷰에 실제 사진을 띄운다
-  const uploads = store.uploadsOf(content.id);
-  const retouched = store.retouchedOf(content.id);
   const pairFor = (originalId: string) => {
     const after = retouched.find((r) => r.originalId === originalId);
     const before = uploads.find((u) => u.id === originalId);
@@ -191,6 +209,21 @@ export function RetouchTab({
           description="사진 단위로 승인·반려합니다. 반려 사유는 필수입니다."
           right={
             <>
+              {retouched.length > 0 ? (
+                <>
+                  <Badge variant={unmatchedCount > 0 ? "warn" : "success"}>
+                    보정본{" "}
+                    <span className="tnum">
+                      {matchedCount}/{originalCount}
+                    </span>
+                  </Badge>
+                  {unmatchedCount > 0 ? (
+                    <Badge variant="warn">
+                      짝 못 찾음 <span className="tnum">{unmatchedCount}</span>
+                    </Badge>
+                  ) : null}
+                </>
+              ) : null}
               <Button size="sm" onClick={() => setRetouchedOpen(true)}>
                 보정본 업로드
               </Button>
@@ -249,9 +282,16 @@ export function RetouchTab({
                   />
                   <div className="mt-1 flex items-center justify-between gap-1">
                     <ApprovalBadge status={st} />
-                    {axMode && p.reviewFlags.length > 0 ? (
-                      <span className="shrink-0 text-badge text-warn">●</span>
-                    ) : null}
+                    <span className="flex shrink-0 items-center gap-1">
+                      {retouched.some((r) => r.originalId === p.id) ? (
+                        <span title="보정본 도착" className="text-badge text-ai">
+                          ◆
+                        </span>
+                      ) : null}
+                      {axMode && p.reviewFlags.length > 0 ? (
+                        <span className="text-badge text-warn">●</span>
+                      ) : null}
+                    </span>
                   </div>
                 </button>
               );
@@ -401,46 +441,86 @@ export function RetouchTab({
 
       <Dialog
         open={retouchedOpen}
-        onClose={() => setRetouchedOpen(false)}
+        onClose={() =>
+          retouched.length > 0 && confirm === null
+            ? setConfirm("cancel")
+            : closeRetouched()
+        }
         title="보정본 업로드"
         description="리터처가 내보낸 파일을 올리면 파일명으로 원본과 짝을 맞춥니다."
         width="760px"
         footer={
-          <>
-            {retouchedFiles.length === 0 ? (
-              <span className="mr-auto text-badge text-fg-muted">
-                보정본을 올리면 완료할 수 있습니다
+          confirm === "cancel" ? (
+            <>
+              <span className="mr-auto text-badge leading-[18px] text-fg-muted">
+                올린 보정본 {retouched.length}건을 어떻게 할까요? 남겨 두면 다음에
+                이어서 할 수 있습니다.
               </span>
-            ) : unmatchedCount > 0 ? (
-              <span className="mr-auto text-badge font-semibold text-warn">
-                {unmatchedCount}건이 아직 짝지어지지 않았습니다. 원본을 지정해야
-                완료할 수 있습니다
+              <Button variant="quiet" onClick={() => setConfirm(null)}>
+                계속 작업
+              </Button>
+              <Button onClick={closeRetouched}>남겨두고 닫기</Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  retouched.forEach((r) => store.removeRetouched(content.id, r.id));
+                  closeRetouched();
+                }}
+              >
+                지우고 닫기
+              </Button>
+            </>
+          ) : confirm === "partial" ? (
+            <>
+              <span className="mr-auto text-badge leading-[18px] text-fg-muted">
+                원본 {originalCount}장 중 {matchedCount}장만 도착했습니다. 나머지{" "}
+                {originalCount - matchedCount}장은 나중에 올릴 수 있습니다.
               </span>
-            ) : content.status !== "보정중" ? (
-              <span className="mr-auto text-badge text-fg-muted">
-                이미 {content.status} 단계입니다
-              </span>
-            ) : (
-              <span className="mr-auto text-badge font-semibold text-success">
-                {retouchedFiles.length}건 모두 짝지어졌습니다
-              </span>
-            )}
-            <Button onClick={() => setRetouchedOpen(false)}>닫기</Button>
-            <Button
-              variant="primary"
-              disabled={!canComplete}
-              onClick={() => {
-                store.updateContent(content.id, {
-                  status: "검수",
-                  statusChangedAt: TODAY,
-                  stuckDays: 0,
-                });
-                setRetouchedOpen(false);
-              }}
-            >
-              보정 완료 · 검수로 넘기기
-            </Button>
-          </>
+              <Button variant="quiet" onClick={() => setConfirm(null)}>
+                더 올리기
+              </Button>
+              <Button variant="primary" onClick={completeRetouch}>
+                이대로 검수로 넘기기
+              </Button>
+            </>
+          ) : (
+            <>
+              {retouched.length === 0 ? (
+                <span className="mr-auto text-badge text-fg-muted">
+                  보정본을 올리면 완료할 수 있습니다
+                </span>
+              ) : unmatchedCount > 0 ? (
+                <span className="mr-auto text-badge font-semibold text-warn">
+                  {unmatchedCount}건이 아직 짝지어지지 않았습니다. 원본을 지정해야
+                  완료할 수 있습니다
+                </span>
+              ) : content.status !== "보정중" ? (
+                <span className="mr-auto text-badge text-fg-muted">
+                  이미 {content.status} 단계입니다
+                </span>
+              ) : (
+                <span className="mr-auto text-badge font-semibold text-success">
+                  {retouched.length}건 모두 짝지어졌습니다
+                </span>
+              )}
+              <Button
+                onClick={() =>
+                  retouched.length > 0 ? setConfirm("cancel") : closeRetouched()
+                }
+              >
+                취소
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!canComplete}
+                onClick={() =>
+                  matchedCount < originalCount ? setConfirm("partial") : completeRetouch()
+                }
+              >
+                보정 완료 · 검수로 넘기기
+              </Button>
+            </>
+          )
         }
       >
         <RetouchedUpload content={content} photos={photos} />
