@@ -1,12 +1,6 @@
 import { intBetween, makeRng, pick } from "@/lib/rand";
 import type { ContentAnalysis } from "./analysis";
-import type {
-  Content,
-  ExcludeReason,
-  Photo,
-  RejectRecord,
-  ReviewFlag,
-} from "./types";
+import type { Content, ExcludeReason, Photo, RejectRecord } from "./types";
 
 /**
  * 목업에서 렌더링할 사진 수.
@@ -15,13 +9,6 @@ import type {
  */
 export const RENDER_RECOMMENDED = 48;
 export const RENDER_EXCLUDED = 24;
-
-const REVIEW_FLAGS: ReviewFlag[] = [
-  "수평 틀어짐",
-  "노출 편차",
-  "색온도 편차",
-  "눈감음",
-];
 
 const REJECT_REASONS = [
   "수평이 1.5도 정도 틀어졌습니다. 재보정 부탁드려요",
@@ -98,18 +85,7 @@ export function buildPhotos(
       excludeReason = r < 0.62 ? "중복" : r < 0.92 ? "흔들림" : "노출 오류";
     }
 
-    // 검수 플래그는 보정 결과가 올라온 뒤에만 붙는다
-    const inReview = ["보정중", "검수", "발행"].includes(content.status);
-    const reviewFlags: ReviewFlag[] = [];
-    if (selected && inReview && rng() < 0.17) reviewFlags.push(pick(rng, REVIEW_FLAGS));
-
     const retoucher = retouchers.length ? pick(rng, retouchers) : null;
-
-    // 리터처가 둘이면 톤이 갈린다. 이 편차를 화면에서 보여주는 게 목적.
-    const base =
-      retoucher && retouchers.length > 1 && retoucher === retouchers[1] ? 6180 : 5720;
-    const colorTempK = Math.round(base + (rng() - 0.5) * 380);
-    const brightness = Math.round((0.44 + (rng() - 0.5) * 0.22) * 100) / 100;
 
     let approvalStatus: Photo["approvalStatus"] = "대기";
     const rejectHistory: RejectRecord[] = [];
@@ -145,27 +121,12 @@ export function buildPhotos(
       confidence: Math.round(confidence * 100) / 100,
       selected,
       excludeReason,
-      reviewFlags,
       approvalStatus,
       rejectHistory,
-      colorTempK,
-      brightness,
       retoucher,
     });
   }
 
   cache.set(key, photos);
   return photos;
-}
-
-export function flagCounts(photos: Photo[]): Array<{ flag: ReviewFlag; count: number }> {
-  const map = new Map<ReviewFlag, number>();
-  for (const p of photos) {
-    if (!p.selected) continue;
-    for (const f of p.reviewFlags) map.set(f, (map.get(f) ?? 0) + 1);
-  }
-  return REVIEW_FLAGS.filter((f) => map.has(f)).map((f) => ({
-    flag: f,
-    count: map.get(f) ?? 0,
-  }));
 }

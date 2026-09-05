@@ -152,8 +152,8 @@ export function RetouchFlow() {
     { label: "원본 전달" },
     { label: "Lightroom 보정", outside: true },
     { label: "결과 업로드" },
-    { label: "1차 검수 · 자동" },
-    { label: "2차 검수 · 사람" },
+    { label: "원본과 짝짓기" },
+    { label: "검수 · 사람" },
     { label: "승인 · 반려" },
   ];
 

@@ -64,9 +64,9 @@ export default function DashboardPage() {
           id="ax-02"
           note={
             <>
-              빠진 컷이 있는 건은 카드에 <span className="font-semibold text-danger">▲</span>,
-              보정 검수에서 걸린 건은 <span className="font-semibold text-ai">◆</span> 로
-              표시됩니다. 토글을 끄면 이 표시가 사라집니다.
+              빠진 컷이 있는 건은 카드에{" "}
+              <span className="font-semibold text-danger">▲</span> 로 표시됩니다. 토글을
+              끄면 이 표시가 사라집니다.
             </>
           }
         >

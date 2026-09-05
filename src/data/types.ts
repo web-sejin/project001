@@ -143,7 +143,6 @@ export interface RejectRecord {
   reason: string;
 }
 
-export type ReviewFlag = "수평 틀어짐" | "노출 편차" | "색온도 편차" | "눈감음";
 
 export type ExcludeReason = "흔들림" | "중복" | "노출 오류" | null;
 
@@ -156,11 +155,8 @@ export interface Photo {
   confidence: number;
   selected: boolean;
   excludeReason: ExcludeReason;
-  reviewFlags: ReviewFlag[];
   approvalStatus: ApprovalStatus;
   rejectHistory: RejectRecord[];
-  colorTempK: number;
-  brightness: number;
   retoucher: string | null;
 }
 

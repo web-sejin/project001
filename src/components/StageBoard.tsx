@@ -5,7 +5,6 @@ import { StuckBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Meter } from "@/components/ui/Meter";
 import { openMissing, shotProgress } from "@/data/analysis";
-import { flagCounts } from "@/data/photos";
 import { useStore } from "@/store/MockStore";
 import { STAGES } from "@/data/types";
 
@@ -53,27 +52,20 @@ export function StageBoard() {
                     ? shotProgress(analysis)
                     : { met: 0, total: 0 };
                   const missing = analysis ? openMissing(analysis) : [];
-                  const flags = flagCounts(store.photosOf(content.id)).reduce(
-                    (s, f) => s + f.count,
-                    0,
-                  );
                   const pub = store.publishProgress(content.id);
 
                   // AI가 만들어낸 신호는 AX 토글이 켜졌을 때만 보여준다.
                   // 끈 상태가 지금 쓰고 있을 법한 화면이기 때문이다.
                   const showMissing = axMode && missing.length > 0;
-                  const showFlags = axMode && !showMissing && flags > 0;
                   const tab = showMissing
                     ? "upload"
-                    : showFlags
-                      ? "retouch"
-                      : stage.key === "발행"
-                        ? "publish"
-                        : stage.key === "보정검수"
-                          ? "retouch"
-                          : stage.key === "업로드"
-                            ? "upload"
-                            : "shoot";
+                    : stage.key === "발행"
+                      ? "publish"
+                      : stage.key === "보정검수"
+                        ? "retouch"
+                        : stage.key === "업로드"
+                          ? "upload"
+                          : "shoot";
 
                   return (
                     <Link
@@ -91,13 +83,6 @@ export function StageBoard() {
                             className="shrink-0 text-badge font-semibold text-danger"
                           >
                             ▲
-                          </span>
-                        ) : showFlags ? (
-                          <span
-                            title={`검수 플래그 ${flags}장`}
-                            className="shrink-0 text-badge font-semibold text-ai"
-                          >
-                            ◆
                           </span>
                         ) : null}
                       </div>

@@ -1,35 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AiBadge, AxHighlight, AxTag } from "@/components/AxNote";
+import { AxTag } from "@/components/AxNote";
 import { ApprovalBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { InfoTip } from "@/components/ui/InfoTip";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { AssignPanel, RetouchFlow } from "./AssignPanel";
 import { CompareView, type Pin } from "./CompareView";
 import { Dialog } from "@/components/ui/Dialog";
 import { RetouchedUpload } from "./RetouchedUpload";
-import { ToneChart } from "./ToneChart";
-import { flagCounts } from "@/data/photos";
 import { TODAY } from "@/data/contents";
 import { useStore } from "@/store/MockStore";
-import type { ApprovalStatus, Content, Photo, ReviewFlag } from "@/data/types";
+import type { ApprovalStatus, Content, Photo } from "@/data/types";
 
-const FLAG_METHOD: Record<ReviewFlag, string> = {
-  "수평 틀어짐":
-    "사진 속 직선을 찾아 지평선과 몇 도 어긋났는지 계산합니다. 이미지 처리 라이브러리(OpenCV)로 하고 AI는 쓰지 않습니다",
-  "노출 편차":
-    "사진의 밝기를 재서 같은 촬영 건의 평균에서 많이 벗어난 컷을 표시합니다",
-  "색온도 편차":
-    "사진의 평균 색을 재서 같은 촬영 건의 가운데 값에서 벗어난 컷을 찾습니다",
-  눈감음:
-    "얼굴에서 눈 위치를 찾아주는 작은 AI로 확인합니다(MediaPipe 같은 라이브러리). 큰 AI를 부를 일이 아닙니다",
-};
-
-type Filter = "전체" | "플래그" | "대기" | "반려" | "승인";
+type Filter = "전체" | "대기" | "반려" | "승인";
 
 export function RetouchTab({
   content,
@@ -39,7 +25,6 @@ export function RetouchTab({
   photos: Photo[];
 }) {
   const store = useStore();
-  const { axMode } = store;
   const pool = useMemo(() => photos.filter((p) => p.selected), [photos]);
 
   const [approvals, setApprovals] = useState<Record<string, ApprovalStatus>>({});
@@ -99,8 +84,8 @@ export function RetouchTab({
             <RetouchFlow />
             <p className="mt-3 text-body leading-[21px] text-fg-muted">
               보정은 수동입니다. 리터처가 라이트룸에서 직접 합니다. 시스템이 하는 건
-              누구에게 언제 맡겼는지 기록하고, 결과가 올라오면 사람이 볼 대상을 좁혀
-              주고, 반려 사유를 남기는 것입니다.
+              누구에게 언제 맡겼는지 기록하고, 결과물을 받아 원본과 짝지어 주고, 반려
+              사유를 남기는 것입니다.
             </p>
             <p className="mt-2 text-body leading-[21px] text-fg-muted">
               배정하면 상태가 보정중으로 넘어가고 정체 일수 계산이 시작됩니다.
@@ -112,7 +97,6 @@ export function RetouchTab({
   }
 
   const statusOf = (p: Photo): ApprovalStatus => approvals[p.id] ?? p.approvalStatus;
-  const flags = flagCounts(pool);
   const selected = pool.find((p) => p.id === selectedId) ?? null;
 
   // 올린 보정본이 있으면 비교 뷰에 실제 사진을 띄운다
@@ -124,7 +108,6 @@ export function RetouchTab({
 
   const visible = pool.filter((p) => {
     if (filter === "전체") return true;
-    if (filter === "플래그") return p.reviewFlags.length > 0;
     return statusOf(p) === filter;
   });
 
@@ -147,60 +130,19 @@ export function RetouchTab({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
         <AssignPanel content={content} />
-
-        {axMode ? (
-          <>
-            <AxHighlight id="ax-04">
-            <Panel tone="ai">
-              <PanelHeader
-                tone="ai"
-                title="1차 검수"
-                description="보정 결과가 올라오면 수평·노출·색온도·눈감음이 의심되는 컷만 표시합니다. 볼 대상을 좁혀줄 뿐 승인 판단은 하지 않습니다."
-                right={<AiBadge />}
-              />
-              <ul className="divide-y divide-line">
-                {flags.length === 0 ? (
-                  <li className="px-4 py-2 text-body text-fg-muted">
-                    플래그된 컷이 없습니다.
-                  </li>
-                ) : (
-                  flags.map(({ flag, count }) => (
-                    <li key={flag} className="flex items-center gap-2 px-4 py-2">
-                      <span className="min-w-0 flex-1 text-body text-fg">{flag}</span>
-                      <span className="tnum text-body text-fg-muted">{count}장</span>
-                      <InfoTip align="right">{FLAG_METHOD[flag]}</InfoTip>
-                    </li>
-                  ))
-                )}
-              </ul>
-              <div className="border-t border-line px-4 py-2">
-                <Button
-                  size="sm"
-                  variant={filter === "플래그" ? "primary" : "default"}
-                  onClick={() => setFilter(filter === "플래그" ? "전체" : "플래그")}
-                >
-                  플래그된 사진만 보기
-                </Button>
-              </div>
-            </Panel>
-            </AxHighlight>
-
-            <AxHighlight id="ax-05">
-            <Panel>
-              <PanelHeader
-                title="보정 톤 일관성"
-                description="RGB 평균 비교. AI가 아닙니다."
-                right={<Badge variant="outline">순수 연산</Badge>}
-              />
-              <div className="p-4">
-                <ToneChart photos={pool} />
-              </div>
-            </Panel>
-            </AxHighlight>
-          </>
-        ) : null}
+        <Panel>
+          <PanelHeader title="보정 흐름" description="어디까지가 시스템인지" />
+          <div className="p-4">
+            <RetouchFlow />
+            <p className="mt-3 text-body leading-[21px] text-fg-muted">
+              보정은 수동입니다. 리터처가 라이트룸에서 직접 합니다. 시스템이 하는 건
+              누구에게 언제 맡겼는지 기록하고, 결과물을 받아 원본과 짝지어 주고, 반려
+              사유를 남기는 것입니다.
+            </p>
+          </div>
+        </Panel>
       </div>
 
       <Panel>
@@ -241,9 +183,7 @@ export function RetouchTab({
         />
 
         <div className="flex flex-wrap gap-1 border-b border-line px-4 py-2">
-          {(["전체", "플래그", "대기", "반려", "승인"] as Filter[])
-            .filter((f) => axMode || f !== "플래그")
-            .map((f) => (
+          {(["전체", "대기", "반려", "승인"] as Filter[]).map((f) => (
               <button
                 key={f}
                 type="button"
@@ -264,14 +204,6 @@ export function RetouchTab({
                   ◆
                 </span>
                 보정본 도착
-              </span>
-            ) : null}
-            {axMode ? (
-              <span className="flex items-center gap-1">
-                <span aria-hidden className="text-warn">
-                  ●
-                </span>
-                1차 검수에서 걸린 컷
               </span>
             ) : null}
           </span>
@@ -300,16 +232,11 @@ export function RetouchTab({
                   />
                   <div className="mt-1 flex items-center justify-between gap-1">
                     <ApprovalBadge status={st} />
-                    <span className="flex shrink-0 items-center gap-1">
-                      {retouched.some((r) => r.originalId === p.id) ? (
-                        <span title="보정본 도착" className="text-badge text-ai">
-                          ◆
-                        </span>
-                      ) : null}
-                      {axMode && p.reviewFlags.length > 0 ? (
-                        <span className="text-badge text-warn">●</span>
-                      ) : null}
-                    </span>
+                    {retouched.some((r) => r.originalId === p.id) ? (
+                      <span title="보정본 도착" className="shrink-0 text-badge text-ai">
+                        ◆
+                      </span>
+                    ) : null}
                   </div>
                 </button>
               );
@@ -354,13 +281,6 @@ export function RetouchTab({
                 />
 
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {axMode
-                    ? selected.reviewFlags.map((f) => (
-                        <Badge key={f} variant="warn">
-                          {f}
-                        </Badge>
-                      ))
-                    : null}
                   {selected.retoucher ? (
                     <Badge variant="neutral">{selected.retoucher}</Badge>
                   ) : null}
