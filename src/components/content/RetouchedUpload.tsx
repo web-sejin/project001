@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Panel, PanelHeader } from "@/components/ui/Panel";
+import { Dialog } from "@/components/ui/Dialog";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { matchOriginal, type MatchCandidate } from "@/lib/matchRetouched";
 import { useStore } from "@/store/MockStore";
@@ -16,22 +16,22 @@ import type { Content, Photo, RetouchedPhoto } from "@/data/types";
  * 짝은 파일명으로 찾는다. 라이트룸이 원본 이름을 유지해서 내보내기 때문이다.
  * 못 찾은 건 사람이 직접 고른다 — 자동으로 아무 데나 붙이면
  * 엉뚱한 사진을 승인하게 된다.
+ *
+ * 어떤 기준으로 짝지었는지도 함께 남긴다. 검수자가 "이게 정말 그 컷의
+ * 보정본인가"를 확인할 근거가 있어야 한다.
  */
 export function RetouchedUpload({
   content,
   photos,
-  onPick,
 }: {
   content: Content;
   photos: Photo[];
-  /** 짝지은 쌍을 클릭하면 위 비교 뷰에서 열리도록 */
-  onPick?: (originalId: string) => void;
 }) {
   const store = useStore();
   const inputRef = useRef<HTMLInputElement>(null);
-  // 올린 파일에 붙일 일련번호
   const seqRef = useRef(0);
   const [dragOver, setDragOver] = useState(false);
+  const [compareId, setCompareId] = useState<string | null>(null);
 
   const uploads = store.uploadsOf(content.id);
   const retouched = store.retouchedOf(content.id);
@@ -59,14 +59,15 @@ export function RetouchedUpload({
     const added: RetouchedPhoto[] = [];
     for (const f of Array.from(list)) {
       if (!f.type.startsWith("image/")) continue;
-      const originalId = matchOriginal(f.name, originals, taken);
-      if (originalId) taken.add(originalId);
+      const hit = matchOriginal(f.name, originals, taken);
+      if (hit) taken.add(hit.id);
       added.push({
         id: `${content.id}-rt-${(seqRef.current += 1)}`,
         contentId: content.id,
         name: f.name,
         url: URL.createObjectURL(f),
-        originalId,
+        originalId: hit?.id ?? null,
+        matchedBy: hit?.how ?? null,
       });
     }
     store.addRetouched(content.id, added);
@@ -77,29 +78,34 @@ export function RetouchedUpload({
   const usedIds = new Set(
     matched.map((r) => r.originalId).filter((v): v is string => Boolean(v)),
   );
+  const comparing = retouched.find((r) => r.id === compareId) ?? null;
 
   return (
-    <Panel>
-      <PanelHeader
-        title="보정본 업로드"
-        description="리터처가 내보낸 파일을 올리면 파일명으로 원본과 짝을 맞춥니다."
-        right={
-          retouched.length > 0 ? (
-            <>
-              <Badge variant="success">
-                짝 지음 <span className="tnum">{matched.length}</span>
-              </Badge>
-              {unmatched.length > 0 ? (
-                <Badge variant="warn">
-                  못 찾음 <span className="tnum">{unmatched.length}</span>
-                </Badge>
-              ) : null}
-            </>
-          ) : null
-        }
-      />
-
+    <>
       <div className="p-4">
+        {retouched.length > 0 ? (
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Badge variant="success">
+              짝 지음 <span className="tnum">{matched.length}</span>
+            </Badge>
+            {unmatched.length > 0 ? (
+              <Badge variant="warn">
+                못 찾음 <span className="tnum">{unmatched.length}</span>
+              </Badge>
+            ) : null}
+            <Button
+              size="sm"
+              variant="quiet"
+              className="ml-auto"
+              onClick={() =>
+                retouched.forEach((r) => store.removeRetouched(content.id, r.id))
+              }
+            >
+              비우기
+            </Button>
+          </div>
+        ) : null}
+
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -209,7 +215,7 @@ export function RetouchedUpload({
             <p className="mb-2 text-body font-semibold text-fg">
               짝지은 쌍 <span className="tnum">{matched.length}</span>
             </p>
-            <ul className="grid gap-2 sm:grid-cols-2">
+            <ul className="space-y-2">
               {matched.map((r) => {
                 const oid = r.originalId as string;
                 const beforeUrl = originalUrl(oid);
@@ -244,15 +250,30 @@ export function RetouchedUpload({
                         className="h-12 w-16 rounded-box border border-ai object-cover"
                       />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-badge text-fg">{originalName(oid)}</p>
-                      <p className="truncate text-badge text-fg-subtle">{r.name}</p>
-                    </div>
-                    {onPick ? (
-                      <Button size="sm" onClick={() => onPick(oid)}>
-                        비교
-                      </Button>
-                    ) : null}
+
+                    <dl className="min-w-0 flex-1 text-badge">
+                      <div className="flex gap-1.5">
+                        <dt className="w-12 shrink-0 text-fg-subtle">원본</dt>
+                        <dd className="min-w-0 flex-1 truncate text-fg">
+                          {originalName(oid)}
+                        </dd>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <dt className="w-12 shrink-0 text-fg-subtle">보정본</dt>
+                        <dd className="min-w-0 flex-1 truncate text-fg">{r.name}</dd>
+                      </div>
+                      <div className="mt-0.5">
+                        <Badge
+                          variant={r.matchedBy === "직접 지정" ? "outline" : "neutral"}
+                        >
+                          {r.matchedBy}
+                        </Badge>
+                      </div>
+                    </dl>
+
+                    <Button size="sm" onClick={() => setCompareId(r.id)}>
+                      비교
+                    </Button>
                     <Button
                       size="sm"
                       variant="quiet"
@@ -266,15 +287,92 @@ export function RetouchedUpload({
             </ul>
           </div>
         ) : null}
-      </div>
 
-      <div className="border-t border-line bg-surface px-4 py-2.5">
-        <p className="text-badge leading-[18px] text-fg-muted">
-          짝짓기는 파일명 비교입니다. AI가 아닙니다. 파일명을 못 믿는 현장이라면
-          사진끼리 지문을 만들어 가장 닮은 것을 찾는 방법도 있습니다. 보정해도 구도는
-          그대로라 지문이 거의 같고, 셀렉의 중복 판정에 쓰는 것과 같은 방법입니다.
+        <p className="mt-4 rounded-box bg-surface px-3 py-2 text-badge leading-[18px] text-fg-muted">
+          짝짓기는 파일명 비교입니다. AI가 아닙니다. 파일명을 못 믿는 현장이라면 사진끼리
+          지문을 만들어 가장 닮은 것을 찾는 방법도 있습니다. 보정해도 구도는 그대로라
+          지문이 거의 같고, 셀렉의 중복 판정에 쓰는 것과 같은 방법입니다.
         </p>
       </div>
-    </Panel>
+
+      <Dialog
+        open={Boolean(comparing)}
+        onClose={() => setCompareId(null)}
+        title="원본 · 보정본 비교"
+        description={comparing ? `짝짓기 기준: ${comparing.matchedBy}` : undefined}
+        width="760px"
+      >
+        {comparing ? (
+          <div className="p-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <figure>
+                <figcaption className="mb-1 text-badge font-semibold text-fg-muted">
+                  원본
+                </figcaption>
+                {originalUrl(comparing.originalId as string) ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={originalUrl(comparing.originalId as string)}
+                    alt="원본"
+                    className="aspect-[3/2] w-full rounded-box border border-line object-cover"
+                  />
+                ) : (
+                  <PhotoBox
+                    id={comparing.originalId as string}
+                    label="원본 파일 없음"
+                    aspect="3/2"
+                  />
+                )}
+              </figure>
+
+              <figure>
+                <figcaption className="mb-1 text-badge font-semibold text-ai">
+                  보정본
+                </figcaption>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={comparing.url}
+                  alt="보정본"
+                  className="aspect-[3/2] w-full rounded-box border border-ai object-cover"
+                />
+              </figure>
+            </div>
+
+            <dl className="mt-4 divide-y divide-line rounded-box border border-line-strong text-body">
+              <Row label="원본" value={originalName(comparing.originalId as string)} />
+              <Row label="보정본" value={comparing.name} />
+              <Row
+                label="짝짓기 기준"
+                value={
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <Badge
+                      variant={
+                        comparing.matchedBy === "직접 지정" ? "outline" : "neutral"
+                      }
+                    >
+                      {comparing.matchedBy}
+                    </Badge>
+                    <span className="text-badge text-fg-muted">
+                      {comparing.matchedBy === "직접 지정"
+                        ? "자동으로 못 찾아서 사람이 골랐습니다"
+                        : "파일명을 비교해 찾았습니다. AI가 아닙니다"}
+                    </span>
+                  </span>
+                }
+              />
+            </dl>
+          </div>
+        ) : null}
+      </Dialog>
+    </>
+  );
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex gap-3 px-3 py-2">
+      <dt className="w-20 shrink-0 text-fg-subtle">{label}</dt>
+      <dd className="min-w-0 flex-1 text-fg">{value}</dd>
+    </div>
   );
 }

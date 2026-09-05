@@ -82,6 +82,7 @@ interface StoreValue {
     contentId: string,
     photoId: string,
     originalId: string | null,
+    matchedBy?: string | null,
   ) => void;
   removeRetouched: (contentId: string, photoId: string) => void;
   clearUploads: (contentId: string) => void;
@@ -236,11 +237,16 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setRetouchedOriginal = useCallback(
-    (contentId: string, photoId: string, originalId: string | null) =>
+    (
+      contentId: string,
+      photoId: string,
+      originalId: string | null,
+      matchedBy: string | null = "직접 지정",
+    ) =>
       setRetouched((prev) => ({
         ...prev,
         [contentId]: (prev[contentId] ?? []).map((p) =>
-          p.id === photoId ? { ...p, originalId } : p,
+          p.id === photoId ? { ...p, originalId, matchedBy } : p,
         ),
       })),
     [],

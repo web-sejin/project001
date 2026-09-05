@@ -9,6 +9,7 @@ import { Meter } from "@/components/ui/Meter";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { Toggle } from "@/components/ui/Toggle";
+import { Dialog } from "@/components/ui/Dialog";
 import { ReshootUpload } from "./ReshootUpload";
 import { UploadVerify } from "./UploadVerify";
 import { countByLabel } from "@/lib/photoLabel";
@@ -30,6 +31,7 @@ export function UploadTab({
   const [dismissed, setDismissed] = useState<string[]>(analysis.dismissedMissing);
   const [recommendedOnly, setRecommendedOnly] = useState(true);
   const [labelFilter, setLabelFilter] = useState("전체");
+  const [reshootOpen, setReshootOpen] = useState(false);
 
   const labels = useMemo(
     () => ["전체", ...Array.from(new Set(photos.map((p) => p.aiLabel)))],
@@ -147,7 +149,14 @@ export function UploadTab({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
-          <PanelHeader title="업로드" />
+          <PanelHeader
+            title="업로드"
+            right={
+              <Button size="sm" onClick={() => setReshootOpen(true)}>
+                재촬영분 추가
+              </Button>
+            }
+          />
           <div className="space-y-3 p-4">
             <div className="flex items-center justify-between text-body">
               <span className="text-fg-muted">프리뷰 (JPG)</span>
@@ -305,7 +314,15 @@ export function UploadTab({
         </div>
       </Panel>
 
-      <ReshootUpload content={content} missing={openMissing} />
+      <Dialog
+        open={reshootOpen}
+        onClose={() => setReshootOpen(false)}
+        title="추가 업로드"
+        description="재촬영분이나 빠졌던 컷을 올립니다. 올리면 누락 경고가 다시 계산됩니다."
+        width="720px"
+      >
+        <ReshootUpload content={content} missing={openMissing} />
+      </Dialog>
     </div>
   );
 }

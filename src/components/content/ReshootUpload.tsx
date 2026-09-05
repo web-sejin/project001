@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from "react";
 import { AiBadge } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { UNCLASSIFIED, countByLabel, guessLabel } from "@/lib/photoLabel";
 import { useStore } from "@/store/MockStore";
 import type { Content, UploadedPhoto } from "@/data/types";
@@ -47,29 +46,24 @@ export function ReshootUpload({
   };
 
   return (
-    <Panel>
-      <PanelHeader
-        title="추가 업로드"
-        description="재촬영분이나 빠졌던 컷을 여기서 올립니다. 올리면 누락 경고가 다시 계산됩니다."
-        right={
-          files.length > 0 ? (
-            <>
-              <Badge variant="neutral">
-                추가분 <span className="tnum">{files.length}</span>장
-              </Badge>
-              <Button
-                size="sm"
-                variant="quiet"
-                onClick={() => store.clearUploads(content.id)}
-              >
-                비우기
-              </Button>
-            </>
-          ) : null
-        }
-      />
+    <div className="p-4">
+      {files.length > 0 ? (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <Badge variant="neutral">
+            추가분 <span className="tnum">{files.length}</span>장
+          </Badge>
+          <Button
+            size="sm"
+            variant="quiet"
+            className="ml-auto"
+            onClick={() => store.clearUploads(content.id)}
+          >
+            비우기
+          </Button>
+        </div>
+      ) : null}
 
-      <div className="p-4">
+      <div>
         {missing.length > 0 ? (
           <p className="mb-3 rounded-box border border-[#EFC2C1] bg-[#FBEAEA] px-3 py-2 text-badge leading-[18px] text-fg-muted">
             아직 필요한 컷:{" "}
@@ -179,6 +173,6 @@ export function ReshootUpload({
           </div>
         ) : null}
       </div>
-    </Panel>
+    </div>
   );
 }

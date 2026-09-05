@@ -12,10 +12,19 @@
 
 const SUFFIX = /[-_ ]?(final|edit|edited|retouch|retouched|보정|최종|v\d+|\d+)$/i;
 
-export function baseName(fileName: string): string {
-  const noExt = fileName.replace(/\.[^.]+$/, "");
-  return noExt.replace(SUFFIX, "").trim().toLowerCase();
+export function stripExt(fileName: string): string {
+  return fileName.replace(/\.[^.]+$/, "").trim().toLowerCase();
 }
+
+export function baseName(fileName: string): string {
+  return stripExt(fileName).replace(SUFFIX, "").trim();
+}
+
+export type MatchHow =
+  | "파일명 완전 일치"
+  | "접미사 제외 후 일치"
+  | "앞부분 일치"
+  | "직접 지정";
 
 export interface MatchCandidate {
   id: string;
@@ -23,24 +32,34 @@ export interface MatchCandidate {
   name: string;
 }
 
+export interface MatchResult {
+  id: string;
+  how: MatchHow;
+}
+
 export function matchOriginal(
   fileName: string,
   candidates: MatchCandidate[],
   taken: Set<string>,
-): string | null {
+): MatchResult | null {
+  const full = stripExt(fileName);
   const base = baseName(fileName);
   if (!base) return null;
 
   const free = candidates.filter((c) => !taken.has(c.id));
 
-  // 1) 이름이 정확히 같은 것
-  const exact = free.find((c) => baseName(c.name) === base);
-  if (exact) return exact.id;
+  // 1) 확장자만 다르고 이름이 같은 것
+  const exact = free.find((c) => stripExt(c.name) === full);
+  if (exact) return { id: exact.id, how: "파일명 완전 일치" };
 
-  // 2) 한쪽이 다른 쪽으로 시작하는 것 (DSC0417 ↔ DSC0417_a)
+  // 2) final, v2 같은 접미사를 떼면 같은 것
+  const stripped = free.find((c) => baseName(c.name) === base);
+  if (stripped) return { id: stripped.id, how: "접미사 제외 후 일치" };
+
+  // 3) 한쪽이 다른 쪽으로 시작하는 것
   const prefix = free.find((c) => {
     const b = baseName(c.name);
     return b.startsWith(base) || base.startsWith(b);
   });
-  return prefix?.id ?? null;
+  return prefix ? { id: prefix.id, how: "앞부분 일치" } : null;
 }

@@ -224,6 +224,8 @@ export interface RetouchedPhoto {
   name: string;
   url: string;
   originalId: string | null;
+  /** 어떤 기준으로 짝을 지었는지. 사람이 직접 고르면 "직접 지정" */
+  matchedBy: string | null;
 }
 
 export type PublishStatus = "미발행" | "발행완료";

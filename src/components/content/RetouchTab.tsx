@@ -10,6 +10,7 @@ import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { AssignPanel, RetouchFlow } from "./AssignPanel";
 import { CompareView, type Pin } from "./CompareView";
+import { Dialog } from "@/components/ui/Dialog";
 import { RetouchedUpload } from "./RetouchedUpload";
 import { ToneChart } from "./ToneChart";
 import { flagCounts } from "@/data/photos";
@@ -47,6 +48,7 @@ export function RetouchTab({
   const [reason, setReason] = useState("");
   const [filter, setFilter] = useState<Filter>("전체");
   const [selectedId, setSelectedId] = useState<string | null>(pool[0]?.id ?? null);
+  const [retouchedOpen, setRetouchedOpen] = useState(false);
 
   if (content.status === "촬영예정") {
     return (
@@ -181,6 +183,9 @@ export function RetouchTab({
           description="사진 단위로 승인·반려합니다. 반려 사유는 필수입니다."
           right={
             <>
+              <Button size="sm" onClick={() => setRetouchedOpen(true)}>
+                보정본 업로드
+              </Button>
               <Badge variant="success">
                 승인 <span className="tnum">{counts.승인}</span>
               </Badge>
@@ -386,14 +391,15 @@ export function RetouchTab({
         </div>
       </Panel>
 
-      <RetouchedUpload
-        content={content}
-        photos={photos}
-        onPick={(originalId) => {
-          setSelectedId(originalId);
-          setReason("");
-        }}
-      />
+      <Dialog
+        open={retouchedOpen}
+        onClose={() => setRetouchedOpen(false)}
+        title="보정본 업로드"
+        description="리터처가 내보낸 파일을 올리면 파일명으로 원본과 짝을 맞춥니다."
+        width="760px"
+      >
+        <RetouchedUpload content={content} photos={photos} />
+      </Dialog>
     </div>
   );
 }
