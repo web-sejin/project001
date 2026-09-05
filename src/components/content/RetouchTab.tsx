@@ -257,6 +257,24 @@ export function RetouchTab({
                 {f}
               </button>
             ))}
+          <span className="ml-auto flex flex-wrap items-center gap-3 text-badge text-fg-muted">
+            {retouched.length > 0 ? (
+              <span className="flex items-center gap-1">
+                <span aria-hidden className="text-ai">
+                  ◆
+                </span>
+                보정본 도착
+              </span>
+            ) : null}
+            {axMode ? (
+              <span className="flex items-center gap-1">
+                <span aria-hidden className="text-warn">
+                  ●
+                </span>
+                1차 검수에서 걸린 컷
+              </span>
+            ) : null}
+          </span>
         </div>
 
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -437,6 +455,53 @@ export function RetouchTab({
             </div>
           ) : null}
         </div>
+        {content.status === "검수" || content.status === "보정중" ? (
+          <div className="flex flex-wrap items-center gap-2 border-t border-line bg-surface px-4 py-3">
+            {counts.대기 > 0 ? (
+              <span className="mr-auto text-badge text-fg-muted">
+                아직 판단하지 않은 컷이 <span className="tnum">{counts.대기}</span>장
+                남았습니다
+              </span>
+            ) : counts.반려 > 0 ? (
+              <span className="mr-auto text-badge font-semibold text-danger">
+                반려 <span className="tnum">{counts.반려}</span>장은 다시 보정해야
+                합니다
+              </span>
+            ) : (
+              <span className="mr-auto text-badge font-semibold text-success">
+                모든 컷을 승인했습니다
+              </span>
+            )}
+
+            {counts.반려 > 0 ? (
+              <Button
+                onClick={() =>
+                  store.updateContent(content.id, {
+                    status: "보정중",
+                    statusChangedAt: TODAY,
+                    stuckDays: 0,
+                  })
+                }
+              >
+                반려분 재보정 요청
+              </Button>
+            ) : null}
+
+            <Button
+              variant="primary"
+              disabled={counts.대기 > 0 || counts.반려 > 0}
+              onClick={() =>
+                store.updateContent(content.id, {
+                  status: "발행",
+                  statusChangedAt: TODAY,
+                  stuckDays: 0,
+                })
+              }
+            >
+              검수 완료 · 발행 단계로
+            </Button>
+          </div>
+        ) : null}
       </Panel>
 
       <Dialog

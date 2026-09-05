@@ -82,6 +82,7 @@ export default function DashboardPage() {
         </AxHighlight>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+          <AxHighlight id="ax-10">
           <Panel>
             <PanelHeader
               title="단계별 평균 소요일"
@@ -128,6 +129,7 @@ export default function DashboardPage() {
               </p>
             </div>
           </Panel>
+          </AxHighlight>
 
           <AttentionPanel />
         </div>
