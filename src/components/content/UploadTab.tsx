@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AiBadge, AxNote, TierBadge } from "@/components/AxNote";
+import { AiBadge, AxHighlight, TierBadge } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { InfoTip } from "@/components/ui/InfoTip";
@@ -23,7 +23,8 @@ export function UploadTab({
   analysis: ContentAnalysis;
   photos: Photo[];
 }) {
-  const { axMode } = useStore();
+  const store = useStore();
+  const { axMode } = store;
   const [dismissed, setDismissed] = useState<string[]>(analysis.dismissedMissing);
   const [recommendedOnly, setRecommendedOnly] = useState(true);
   const [labelFilter, setLabelFilter] = useState("전체");
@@ -36,7 +37,8 @@ export function UploadTab({
   const openMissing = analysis.missing.filter((m) => !dismissed.includes(m.label));
   const lowConfidence = photos.filter((p) => p.confidence < 0.8).length;
 
-  if (content.status === "촬영예정") {
+  // 직접 올린 사진이 있으면 그쪽이 우선이다. 시드 더미(800장)를 덮어쓴다.
+  if (content.status === "촬영예정" || store.uploadsOf(content.id).length > 0) {
     return <UploadVerify content={content} />;
   }
 
@@ -51,6 +53,7 @@ export function UploadTab({
     <div className="space-y-4">
       {/* 누락 탐지는 AI가 만들어낸 신호라 AX 토글에 묶는다 */}
       {axMode ? (
+        <AxHighlight id="ax-02">
         <Panel tone="ai">
           <PanelHeader
             tone="ai"
@@ -121,6 +124,7 @@ export function UploadTab({
             )}
           </div>
         </Panel>
+        </AxHighlight>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -155,6 +159,7 @@ export function UploadTab({
         </Panel>
 
         {axMode ? (
+          <AxHighlight id="ax-03">
           <Panel tone="ai">
             <PanelHeader
               tone="ai"
@@ -185,10 +190,9 @@ export function UploadTab({
               </p>
             </div>
           </Panel>
+          </AxHighlight>
         ) : null}
       </div>
-
-      {axMode ? <AxNote id="ax-03" /> : null}
 
       <Panel tone={axMode ? "ai" : "default"}>
         <PanelHeader

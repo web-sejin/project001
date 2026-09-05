@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AxNote } from "@/components/AxNote";
+import { AxHighlight } from "@/components/AxNote";
 import { PageHeader } from "@/components/PageHeader";
 import { StageBoard } from "@/components/StageBoard";
 import { StatusBadge, StuckBadge } from "@/components/StatusBadge";
@@ -64,6 +64,16 @@ export default function DashboardPage() {
           />
         </div>
 
+        <AxHighlight
+          id="ax-02"
+          note={
+            <>
+              빠진 컷이 있는 건은 카드에 <span className="font-semibold text-danger">▲</span>,
+              보정 검수에서 걸린 건은 <span className="font-semibold text-ai">◆</span> 로
+              표시됩니다. 토글을 끄면 이 표시가 사라집니다.
+            </>
+          }
+        >
         <Panel>
           <PanelHeader
             title="업무 흐름"
@@ -73,13 +83,7 @@ export default function DashboardPage() {
             <StageBoard />
           </div>
         </Panel>
-
-        <AxNote id="ax-02">
-          업로드된 사진을 공간 유형으로 분류해 체크리스트와 대조합니다. 빠진 컷이 있는
-          건은 보드에서 <span className="font-semibold text-danger">▲</span> 로,
-          보정 검수에서 걸린 건은 <span className="font-semibold text-ai">◆</span> 로
-          표시됩니다. 토글을 끄면 이 표시가 사라집니다.
-        </AxNote>
+        </AxHighlight>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
           <Panel>
@@ -130,6 +134,7 @@ export default function DashboardPage() {
           </Panel>
 
           <div className="space-y-4">
+            <AxHighlight id="ax-08">
             <Panel>
               <PanelHeader
                 title="정체 알림"
@@ -172,8 +177,7 @@ export default function DashboardPage() {
                 ) : null}
               </ul>
             </Panel>
-
-            <AxNote id="ax-08" />
+            </AxHighlight>
           </div>
         </div>
       </div>

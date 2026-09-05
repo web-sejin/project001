@@ -177,6 +177,20 @@ export interface ChannelProfile {
   tone: string;
 }
 
+/**
+ * 사용자가 화면에서 직접 올린 사진.
+ *
+ * 시드 더미와 구분한다. 직접 올린 게 있으면 그쪽이 우선이다.
+ * url 은 브라우저 objectURL 이라 새로고침하면 사라진다.
+ */
+export interface UploadedPhoto {
+  id: string;
+  contentId: string;
+  name: string;
+  url: string;
+  label: string;
+}
+
 export type PublishStatus = "미발행" | "발행완료";
 
 export interface Publication {

@@ -19,7 +19,7 @@ export function Panel({
 }) {
   return (
     <section
-      className={`overflow-hidden rounded-box border bg-canvas ${
+      className={`rounded-box border bg-canvas ${
         tone === "ai"
           ? "border-ai-line border-l-[3px] border-l-ai"
           : "border-line-strong"

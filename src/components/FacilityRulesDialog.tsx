@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AxNote } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -256,7 +255,6 @@ export function FacilityRulesDialog({
             </Button>
           </div>
 
-          <AxNote id="ax-01" className="mt-3" />
         </div>
       )}
     </Dialog>

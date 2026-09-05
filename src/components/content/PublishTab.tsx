@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AiBadge, AxNote } from "@/components/AxNote";
+import { AiBadge, AxHighlight } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -141,8 +141,6 @@ export function PublishTab({
         </Panel>
       ) : axMode ? (
         <>
-          <AxNote id="ax-06" />
-
           <div className="flex flex-wrap gap-1">
             {CHANNELS.map((ch) => (
               <button
@@ -162,6 +160,7 @@ export function PublishTab({
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+            <AxHighlight id="ax-06">
             <Panel tone="ai">
               <PanelHeader
                 tone="ai"
@@ -181,8 +180,10 @@ export function PublishTab({
                 ))}
               </div>
             </Panel>
+            </AxHighlight>
 
             <div className="space-y-4">
+              <AxHighlight id="ax-07">
               <Panel tone="ai">
                 <PanelHeader
                   tone="ai"
@@ -210,8 +211,7 @@ export function PublishTab({
                   </Button>
                 </div>
               </Panel>
-
-              <AxNote id="ax-07" />
+              </AxHighlight>
             </div>
           </div>
         </>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AiBadge, AxNote } from "@/components/AxNote";
+import { AiBadge, AxHighlight, AxTag } from "@/components/AxNote";
 import { ApprovalBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -114,6 +114,7 @@ export function RetouchTab({
 
         {axMode ? (
           <>
+            <AxHighlight id="ax-04">
             <Panel tone="ai">
               <PanelHeader
                 tone="ai"
@@ -146,7 +147,9 @@ export function RetouchTab({
                 </Button>
               </div>
             </Panel>
+            </AxHighlight>
 
+            <AxHighlight id="ax-05">
             <Panel>
               <PanelHeader
                 title="보정 톤 일관성"
@@ -157,16 +160,10 @@ export function RetouchTab({
                 <ToneChart photos={pool} />
               </div>
             </Panel>
+            </AxHighlight>
           </>
         ) : null}
       </div>
-
-      {axMode ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <AxNote id="ax-04" />
-          <AxNote id="ax-05" />
-        </div>
-      ) : null}
 
       <Panel>
         <PanelHeader
@@ -290,7 +287,8 @@ export function RetouchTab({
                 {selected.rejectHistory.length + (history[selected.id]?.length ?? 0) >
                 0 ? (
                   <div className="rounded-box border border-line bg-surface p-2.5">
-                    <p className="text-badge font-semibold text-fg-muted">
+                    <p className="flex items-center gap-1.5 text-badge font-semibold text-fg-muted">
+                      <AxTag id="ax-09" align="left" />
                       반려 이력{" "}
                       <span className="tnum">
                         {selected.rejectHistory.length +
@@ -376,8 +374,6 @@ export function RetouchTab({
           ) : null}
         </div>
       </Panel>
-
-      <AxNote id="ax-09" />
     </div>
   );
 }

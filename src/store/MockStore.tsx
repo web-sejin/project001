@@ -26,6 +26,7 @@ import type {
   Photo,
   Publication,
   ShotItem,
+  UploadedPhoto,
 } from "@/data/types";
 
 /**
@@ -61,6 +62,12 @@ interface StoreValue {
 
   savePublication: (input: Publication) => void;
 
+  /** 화면에서 직접 올린 사진 */
+  uploadsOf: (contentId: string) => UploadedPhoto[];
+  addUploads: (contentId: string, photos: UploadedPhoto[]) => void;
+  setUploadLabel: (contentId: string, photoId: string, label: string) => void;
+  clearUploads: (contentId: string) => void;
+
   accommodationOf: (id: string) => Accommodation | undefined;
   contentOf: (id: string) => Content | undefined;
   contentsOfAccommodation: (accId: string) => Content[];
@@ -92,6 +99,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     useState<Accommodation[]>(ACCOMMODATIONS);
   const [contents, setContents] = useState<Content[]>(CONTENTS);
   const [publications, setPublications] = useState<Publication[]>(PUBLICATIONS);
+  const [uploads, setUploads] = useState<Record<string, UploadedPhoto[]>>({});
   const [axMode, setAxMode] = useState(true);
 
   const addFacility = useCallback((input: Omit<FacilityDef, "id">) => {
@@ -167,6 +175,30 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const addUploads = useCallback((contentId: string, photos: UploadedPhoto[]) => {
+    setUploads((prev) => ({ ...prev, [contentId]: [...(prev[contentId] ?? []), ...photos] }));
+  }, []);
+
+  const setUploadLabel = useCallback(
+    (contentId: string, photoId: string, label: string) =>
+      setUploads((prev) => ({
+        ...prev,
+        [contentId]: (prev[contentId] ?? []).map((p) =>
+          p.id === photoId ? { ...p, label } : p,
+        ),
+      })),
+    [],
+  );
+
+  const clearUploads = useCallback((contentId: string) => {
+    setUploads((prev) => {
+      (prev[contentId] ?? []).forEach((p) => URL.revokeObjectURL(p.url));
+      const next = { ...prev };
+      delete next[contentId];
+      return next;
+    });
+  }, []);
+
   const value = useMemo<StoreValue>(() => {
     const accommodationOf = (id: string) => accommodations.find((a) => a.id === id);
     const contentOf = (id: string) => contents.find((c) => c.id === id);
@@ -196,6 +228,10 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
       addContent,
       updateContent,
       savePublication,
+      uploadsOf: (contentId) => uploads[contentId] ?? [],
+      addUploads,
+      setUploadLabel,
+      clearUploads,
       accommodationOf,
       contentOf,
       contentsOfAccommodation: (accId) =>
@@ -221,6 +257,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     accommodations,
     contents,
     publications,
+    uploads,
     axMode,
     addFacility,
     updateFacility,
@@ -229,6 +266,9 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     addContent,
     updateContent,
     savePublication,
+    addUploads,
+    setUploadLabel,
+    clearUploads,
   ]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

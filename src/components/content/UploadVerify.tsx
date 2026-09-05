@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AiBadge, AxNote } from "@/components/AxNote";
+import { AiBadge, AxHighlight, AxTag } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { InfoTip } from "@/components/ui/InfoTip";
@@ -9,7 +9,7 @@ import { Meter } from "@/components/ui/Meter";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { TODAY } from "@/data/contents";
 import { useStore } from "@/store/MockStore";
-import type { Content, ShotItem } from "@/data/types";
+import type { Content, ShotItem, UploadedPhoto } from "@/data/types";
 
 const UNCLASSIFIED = "미분류";
 
@@ -52,53 +52,33 @@ function guessLabel(fileName: string, labels: string[]): string {
   return UNCLASSIFIED;
 }
 
-interface Uploaded {
-  id: string;
-  name: string;
-  url: string;
-  label: string;
-}
-
 /** 썸네일을 그릴 최대 장수. 그 이상은 집계만 한다 */
 const RENDER_CAP = 60;
 
 export function UploadVerify({ content }: { content: Content }) {
   const store = useStore();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<Uploaded[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [simDone, setSimDone] = useState(0);
 
+  const files = store.uploadsOf(content.id);
   const shotList = store.shotListOf(content.accommodationId);
   const labels = useMemo(() => shotList.map((s) => s.label), [shotList]);
-
-  // 컴포넌트가 사라질 때 objectURL 을 반납한다
-  const filesRef = useRef<Uploaded[]>([]);
-  useEffect(() => {
-    filesRef.current = files;
-  }, [files]);
-  useEffect(
-    () => () => filesRef.current.forEach((f) => URL.revokeObjectURL(f.url)),
-    [],
-  );
+  const beforeShoot = content.status === "촬영예정";
 
   const addFiles = (list: FileList | null) => {
     if (!list?.length) return;
-    const added: Uploaded[] = Array.from(list)
+    const added: UploadedPhoto[] = Array.from(list)
       .filter((f) => f.type.startsWith("image/"))
       .map((f, i) => ({
-        id: `${Date.now()}-${i}-${f.name}`,
+        id: `${content.id}-${Date.now()}-${i}`,
+        contentId: content.id,
         name: f.name,
         url: URL.createObjectURL(f),
         label: guessLabel(f.name, labels),
       }));
-    setFiles((prev) => [...prev, ...added]);
-  };
-
-  const reset = () => {
-    files.forEach((f) => URL.revokeObjectURL(f.url));
-    setFiles([]);
+    store.addUploads(content.id, added);
   };
 
   /* ----- 여기가 진짜로 동작하는 부분: 분류 결과 ↔ 체크리스트 대조 ----- */
@@ -117,7 +97,7 @@ export function UploadVerify({ content }: { content: Content }) {
   const missing = required.filter((r) => r.current < r.minCount);
   const unclassified = counts[UNCLASSIFIED] ?? 0;
 
-  // 샘플 시뮬레이션 (사진이 없을 때 흐름만 보기 위한 경로)
+  // 샘플 시뮬레이션 (올릴 사진이 없을 때 흐름만 보기 위한 경로)
   useEffect(() => {
     if (!simulating || simDone >= 800) return;
     const t = setTimeout(() => {
@@ -146,9 +126,13 @@ export function UploadVerify({ content }: { content: Content }) {
               files.length > 0 ? (
                 <>
                   <Badge variant="neutral">
-                    <span className="tnum">{files.length}</span>장
+                    직접 올린 사진 <span className="tnum">{files.length}</span>장
                   </Badge>
-                  <Button size="sm" variant="quiet" onClick={reset}>
+                  <Button
+                    size="sm"
+                    variant="quiet"
+                    onClick={() => store.clearUploads(content.id)}
+                  >
                     비우기
                   </Button>
                 </>
@@ -204,10 +188,11 @@ export function UploadVerify({ content }: { content: Content }) {
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="text-body font-semibold text-fg">분류 결과</span>
                   <AiBadge label="파일명 기반 추정 (모의)" />
+                  <AxTag id="ax-02" align="left" />
                   <InfoTip>
                     실제 시스템은 이 자리에서 LLM 비전으로 이미지를 분류합니다. 목업에는
                     모델이 없어 파일명만 봅니다. 못 알아보면 미분류로 두고 직접 고르게
-                    합니다. 아래 체크리스트 대조는 배열 비교라 실제로 동작합니다.
+                    합니다. 오른쪽 체크리스트 대조는 배열 비교라 실제로 동작합니다.
                   </InfoTip>
                   {unclassified > 0 ? (
                     <Badge variant="warn">
@@ -220,7 +205,7 @@ export function UploadVerify({ content }: { content: Content }) {
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
                   {files.slice(0, RENDER_CAP).map((f) => (
                     <figure key={f.id} className="min-w-0">
-                      {/* 사용자가 방금 고른 로컬 파일이라 next/image 를 쓰지 않는다 */}
+                      {/* 방금 고른 로컬 파일이라 next/image 를 쓰지 않는다 */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={f.url}
@@ -231,11 +216,7 @@ export function UploadVerify({ content }: { content: Content }) {
                         <select
                           value={f.label}
                           onChange={(e) =>
-                            setFiles((prev) =>
-                              prev.map((x) =>
-                                x.id === f.id ? { ...x, label: e.target.value } : x,
-                              ),
-                            )
+                            store.setUploadLabel(content.id, f.id, e.target.value)
                           }
                           aria-label={`${f.name} 분류`}
                           className={`w-full truncate rounded-box border bg-canvas px-1 py-0.5 text-badge outline-none focus:border-ai ${
@@ -262,47 +243,49 @@ export function UploadVerify({ content }: { content: Content }) {
                 {files.length > RENDER_CAP ? (
                   <p className="mt-2 text-badge text-fg-subtle">
                     썸네일은 {RENDER_CAP}장까지만 그립니다. 대조는{" "}
-                    <span className="tnum">{files.length}</span>장 전부를 대상으로
-                    합니다.
+                    <span className="tnum">{files.length}</span>장 전부가 대상입니다.
                   </p>
                 ) : null}
               </div>
             ) : null}
           </div>
 
-          <div className="border-t border-line bg-surface px-4 py-2.5">
-            {simulating || simDone > 0 ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-badge text-fg-muted">
-                  <span>샘플 업로드 중</span>
-                  <span className="tnum">{simDone} / 800</span>
+          {files.length === 0 ? (
+            <div className="border-t border-line bg-surface px-4 py-2.5">
+              {simulating || simDone > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-badge text-fg-muted">
+                    <span>샘플 업로드 중</span>
+                    <span className="tnum">{simDone} / 800</span>
+                  </div>
+                  <Meter value={simDone} max={800} tone="ai" />
                 </div>
-                <Meter value={simDone} max={800} tone="ai" />
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-badge text-fg-muted">
-                  올릴 사진이 없으면 샘플로 흐름만 볼 수 있습니다.
-                </p>
-                <Button size="sm" onClick={() => setSimulating(true)}>
-                  샘플 800장으로 진행
-                </Button>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-badge text-fg-muted">
+                    올릴 사진이 없으면 샘플 800장으로 흐름만 볼 수 있습니다.
+                  </p>
+                  <Button size="sm" onClick={() => setSimulating(true)}>
+                    샘플 800장으로 진행
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : null}
         </Panel>
-
-        <AxNote id="ax-02" />
       </div>
 
       <div className="space-y-4">
-        <Panel tone={missing.length > 0 && files.length > 0 ? "ai" : "default"}>
+        <AxHighlight id="ax-02">
+        <Panel tone={files.length > 0 && missing.length > 0 ? "ai" : "default"}>
           <PanelHeader
-            tone={missing.length > 0 && files.length > 0 ? "ai" : "default"}
+            tone={files.length > 0 && missing.length > 0 ? "ai" : "default"}
             title="필수 컷 대조"
             description="올린 사진의 분류 결과와 체크리스트를 맞춰봅니다."
             right={
-              <Badge variant={missing.length === 0 && files.length > 0 ? "success" : "outline"}>
+              <Badge
+                variant={files.length > 0 && missing.length === 0 ? "success" : "outline"}
+              >
                 <span className="tnum">
                   {met.length}/{required.length}
                 </span>
@@ -375,26 +358,37 @@ export function UploadVerify({ content }: { content: Content }) {
               </ul>
 
               <div className="border-t border-line p-4">
-                <Button
-                  variant="primary"
-                  className="w-full"
-                  onClick={() =>
-                    store.updateContent(content.id, {
-                      status: "촬영완료",
-                      statusChangedAt: TODAY,
-                      stuckDays: 0,
-                    })
-                  }
-                >
-                  촬영 완료로 처리
-                </Button>
-                <p className="mt-2 text-badge leading-[16px] text-fg-subtle">
-                  누락이 있어도 처리할 수 있습니다. 시스템은 알려줄 뿐 막지 않습니다.
-                </p>
+                {beforeShoot ? (
+                  <>
+                    <Button
+                      variant="primary"
+                      className="w-full"
+                      onClick={() =>
+                        store.updateContent(content.id, {
+                          status: "촬영완료",
+                          statusChangedAt: TODAY,
+                          stuckDays: 0,
+                        })
+                      }
+                    >
+                      촬영 완료로 처리
+                    </Button>
+                    <p className="mt-2 text-badge leading-[16px] text-fg-subtle">
+                      누락이 있어도 처리할 수 있습니다. 시스템은 알려줄 뿐 막지
+                      않습니다.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-badge leading-[16px] text-fg-muted">
+                    직접 올린 사진 <span className="tnum">{files.length}</span>장을
+                    기준으로 계산한 결과입니다. 비우면 샘플 데이터 화면으로 돌아갑니다.
+                  </p>
+                )}
               </div>
             </>
           )}
         </Panel>
+        </AxHighlight>
       </div>
     </div>
   );
