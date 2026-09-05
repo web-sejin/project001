@@ -31,7 +31,7 @@ export function getChannelCopy(
   const has = (id: string) => acc.facilityIds.includes(id);
   const words = acc.facilityIds.map((id) => WORD[id]).filter(Boolean);
   const roomLine =
-    acc.roomTypes > 1 ? `객실 ${acc.roomTypes}개 타입` : "독채 1개 타입";
+    acc.roomCount > 1 ? `객실 ${acc.roomCount}개` : "독채 1개";
 
   switch (channelId) {
     case "ch-own":

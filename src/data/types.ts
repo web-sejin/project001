@@ -49,7 +49,7 @@ export interface FacilityDef {
   label: string;
   /**
    * 공통 — 모든 숙소에 무조건 적용
-   * 객실 — 숙소의 객실 타입 수만큼 반복 전개
+   * 객실 — 숙소의 객실 수를 곱해 합산
    * 선택 — 숙소가 보유를 체크했을 때만 적용
    */
   scope: FacilityScope;
@@ -63,8 +63,8 @@ export interface Accommodation {
   type: AccommodationType;
   address: string;
   region: string;
-  /** 객실 타입 수. 객실 규칙이 이 수만큼 전개된다 */
-  roomTypes: number;
+  /** 객실 수. 객실 규칙의 장수에 이 값을 곱한다 */
+  roomCount: number;
   /** 보유한 시설 항목 (FacilityDef.id) */
   facilityIds: string[];
 }

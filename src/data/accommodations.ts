@@ -7,7 +7,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "풀빌라",
     address: "제주 제주시 애월읍 애월해안로 621",
     region: "제주",
-    roomTypes: 3,
+    roomCount: 3,
     facilityIds: ["f-pool", "f-breakfast", "f-bbq", "f-spa", "f-outdoor"],
   },
   {
@@ -16,7 +16,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "펜션",
     address: "강원 강릉시 창해로14번길 20",
     region: "강릉",
-    roomTypes: 2,
+    roomCount: 2,
     facilityIds: ["f-breakfast", "f-bbq", "f-pet", "f-outdoor"],
   },
   {
@@ -25,7 +25,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "글램핑",
     address: "경기 가평군 청평면 호반로 1035",
     region: "가평",
-    roomTypes: 2,
+    roomCount: 2,
     facilityIds: ["f-pool", "f-bbq", "f-pet", "f-outdoor"],
   },
   {
@@ -34,7 +34,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "독채",
     address: "전남 여수시 돌산읍 돌산로 3218",
     region: "여수",
-    roomTypes: 1,
+    roomCount: 1,
     facilityIds: ["f-bbq", "f-outdoor"],
   },
   {
@@ -43,7 +43,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "호텔",
     address: "강원 속초시 청대로 105",
     region: "속초",
-    roomTypes: 3,
+    roomCount: 3,
     facilityIds: ["f-pool", "f-breakfast", "f-spa"],
   },
   {
@@ -52,7 +52,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "한옥",
     address: "경북 경주시 포석로 1080-14",
     region: "경주",
-    roomTypes: 2,
+    roomCount: 2,
     facilityIds: ["f-breakfast", "f-outdoor"],
   },
   {
@@ -61,7 +61,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "호텔",
     address: "부산 수영구 광안해변로 219",
     region: "부산",
-    roomTypes: 3,
+    roomCount: 3,
     facilityIds: ["f-breakfast", "f-spa"],
   },
   {
@@ -70,7 +70,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "풀빌라",
     address: "강원 양양군 현북면 하조대해안길 119",
     region: "양양",
-    roomTypes: 2,
+    roomCount: 2,
     facilityIds: ["f-pool", "f-bbq", "f-pet", "f-outdoor"],
   },
   {
@@ -79,7 +79,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "펜션",
     address: "경남 남해군 삼동면 독일로 92",
     region: "남해",
-    roomTypes: 2,
+    roomCount: 2,
     facilityIds: ["f-breakfast", "f-bbq", "f-outdoor"],
   },
   {
@@ -88,7 +88,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "리조트",
     address: "충남 태안군 안면읍 꽃지해안로 400",
     region: "태안",
-    roomTypes: 3,
+    roomCount: 3,
     facilityIds: ["f-pool", "f-breakfast", "f-bbq", "f-spa", "f-outdoor"],
   },
   {
@@ -97,7 +97,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "독채",
     address: "제주 서귀포시 성산읍 일출로 284",
     region: "제주",
-    roomTypes: 1,
+    roomCount: 1,
     facilityIds: ["f-pool", "f-bbq", "f-pet", "f-outdoor"],
   },
   {
@@ -106,7 +106,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "리조트",
     address: "강원 평창군 대관령면 올림픽로 715",
     region: "평창",
-    roomTypes: 3,
+    roomCount: 3,
     facilityIds: ["f-breakfast", "f-bbq", "f-spa", "f-outdoor"],
   },
   {
@@ -115,7 +115,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "펜션",
     address: "경남 통영시 발개로 205",
     region: "통영",
-    roomTypes: 2,
+    roomCount: 2,
     facilityIds: ["f-bbq", "f-outdoor"],
   },
   {
@@ -124,7 +124,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     type: "호텔",
     address: "인천 중구 왕산해안로 27",
     region: "인천",
-    roomTypes: 2,
+    roomCount: 2,
     facilityIds: ["f-pool", "f-breakfast"],
   },
 ];

@@ -29,7 +29,7 @@ const BLANK: Accommodation = {
   type: "풀빌라",
   address: "",
   region: "",
-  roomTypes: 2,
+  roomCount: 2,
   facilityIds: ["f-outdoor"],
 };
 
@@ -47,7 +47,7 @@ export default function AccommodationsPage() {
 
   const preview = useMemo(
     () =>
-      form ? generateShotList(store.facilities, form.roomTypes, form.facilityIds) : [],
+      form ? generateShotList(store.facilities, form.roomCount, form.facilityIds) : [],
     [store.facilities, form],
   );
   const previewCuts = preview.reduce((s, i) => s + i.minCount, 0);
@@ -152,18 +152,17 @@ export default function AccommodationsPage() {
               </Field>
 
               <Field
-                label="객실 타입 수"
+                label="객실 수"
                 help={
                   <>
-                    이 숫자를 곱해 침실·욕실 필요 장수가 정해집니다. 타입 1개당 몇
-                    컷인지는{" "}
+                    객실 1개당 몇 컷인지는{" "}
                     <Link
                       href="/facilities"
                       className="font-medium text-ai underline underline-offset-2"
                     >
                       시설 관리 &gt; {roomFacility?.label ?? "객실"}
                     </Link>
-                    에서 정합니다
+                    에서 정하고, 여기에 객실 수를 곱합니다
                     {roomFacility
                       ? ` (현재 ${roomFacility.rules
                           .map((r) => `${r.label} ${r.minCount}컷`)
@@ -178,9 +177,9 @@ export default function AccommodationsPage() {
                     <button
                       key={n}
                       type="button"
-                      onClick={() => setForm({ ...form, roomTypes: n })}
+                      onClick={() => setForm({ ...form, roomCount: n })}
                       className={`tnum rounded-box border px-4 py-1 text-body ${
-                        form.roomTypes === n
+                        form.roomCount === n
                           ? "border-ai bg-ai-bg font-semibold text-ai"
                           : "border-line-strong text-fg-muted hover:text-fg"
                       }`}
@@ -249,7 +248,7 @@ export default function AccommodationsPage() {
           <Panel>
             <PanelHeader
               title="촬영 필수 컷 목록"
-              description="시설 관리의 컷 규칙 + 위에서 고른 보유 시설 + 객실 타입 수로 만들어집니다."
+              description="시설 관리의 컷 규칙에 객실 수와 보유 시설을 적용한 결과입니다."
               right={
                 <Badge variant="ai">
                   <span className="tnum">{preview.length}</span>항목 ·{" "}
@@ -371,7 +370,7 @@ export default function AccommodationsPage() {
                   <Th>숙소명</Th>
                   <Th>유형</Th>
                   <Th>지역</Th>
-                  <Th className="text-right">객실 타입</Th>
+                  <Th className="text-right">객실 수</Th>
                   <Th>보유 시설</Th>
                   <Th>촬영 건</Th>
                 </tr>
@@ -390,7 +389,7 @@ export default function AccommodationsPage() {
                       <td className="px-2.5 text-fg-muted">{a.type}</td>
                       <td className="px-2.5 text-fg-muted">{a.region}</td>
                       <td className="tnum px-2.5 text-right text-fg-muted">
-                        {a.roomTypes}
+                        {a.roomCount}
                       </td>
                       <td className="px-2.5 py-1.5">
                         <span className="flex flex-wrap gap-1">
