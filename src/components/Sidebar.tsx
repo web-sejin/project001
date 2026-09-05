@@ -139,10 +139,6 @@ function AxToggle({
             />
             남색 — 자동화 (AI 아님)
           </p>
-          <p className="mt-1.5 text-badge leading-[15px] text-nav-muted">
-            표식에 마우스를 올리면 설명이 펼쳐집니다. 끄면 지금 쓰고 있을 법한
-            관리 화면이 됩니다.
-          </p>
         </>
       ) : (
         <p className="mt-2 text-badge leading-[15px] text-nav-muted">
