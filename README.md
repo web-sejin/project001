@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 콘텐츠 제작 운영 관리 시스템 (목업)
 
-## Getting Started
+숙소·공간 콘텐츠 제작팀의 업무 흐름을 관리하는 내부용 웹 목업입니다.
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+촬영 일정 관리 → 촬영 사진 업로드 → 사진 보정 및 검수 → 채널별 콘텐츠 업로드
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+화면 완성도보다 **AX(AI Transformation) 관점의 문제 정의**를 보여주는 것이 목적입니다.
+어디가 병목인지 짚고, 거기에 AI 또는 자동화를 정확한 위치에 붙였는지를 화면으로 설명합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 핵심 진단
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+편집 단계에서 "화장실 컷이 없네"를 발견하면 이미 늦습니다. 촬영팀은 철수했고,
+숙소 재방문 협의를 다시 해야 하고, 며칠이 날아갑니다.
 
-## Learn More
+**이 시스템의 1차 목표는 그 발견 시점을 촬영 현장으로 당기는 것입니다.**
 
-To learn more about Next.js, take a look at the following resources:
+설계 원칙은 전 화면에 일관됩니다 — `AI/시스템이 초안 → 사람이 조정 → 확정`.
+AI는 사람의 판단을 대체하지 않고, 판단할 대상을 좁힙니다. 800장을 보던 사람이 3~4줄만 보게 만드는 것.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 화면
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| 경로 | 내용 |
+|---|---|
+| `/` | 대시보드. KPI 4개, 단계별 평균 소요일(보정 4.2일 병목), 정체 알림 |
+| `/pipeline` | 파이프라인 보드. 5단계 칸반, 필수 컷 진행률, 정체 배지, AI 경고 |
+| `/content/[id]` | **콘텐츠 상세.** 촬영 / 업로드·분류 / 보정·검수 / 발행 4개 탭 |
+| `/calendar` | 월간 촬영 캘린더 |
+| `/accommodations` | 숙소 관리. 시설 정보 입력 → 필수 컷 목록 자동 생성 |
+| `/how-it-works` | 처리 구조. 병목 진단, 3층 파이프라인, 수단 선정 근거, 저장 계층, 채널 정책 |
 
-## Deploy on Vercel
+## AI를 쓰는 곳 / 안 쓰는 곳
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+"AI가 처리합니다"로 뭉뚱그리지 않았습니다. 수단이 세 층위로 나뉘고, 어떤 것은 아예 AI가 아닙니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| 층위 | 예시 | 이유 |
+|---|---|---|
+| 순수 연산 | 흔들림(라플라시안 분산), 노출(히스토그램), 수평(허프 변환) | 수식이라 결과가 항상 같고 800장을 수 초에 처리 |
+| 전용 모델 | 중복 제거(임베딩 유사도), 스마트 크롭(객체 검출) | 작고 빠르고 저렴. 로컬 실행 가능 |
+| LLM 비전 | 공간 라벨링, 촬영 누락 판단, 채널별 카피 | 의미 이해가 필요한 것만 |
+| AI 아님 | 담당자 배정, 병목 집계, 리사이즈, 필수 컷 대조 | 조건 분기·쿼리·배열 차집합이면 충분 |
+
+### 처리 순서 = 비용 설계
+
+```
+사진 800장
+  ↓ [연산] 결함 필터 · 3초        흔들림 34, 노출 8 제외 → 758장
+  ↓ [전용 모델] 중복 제거 · 41초   유사 컷 412 제외 → 346장
+  ↓ [LLM 비전] 라벨링 · 2분 18초   중복 그룹은 대표 1장만 라벨링 후 상속
+  ↓ 체크리스트 대조 (배열 비교)
+대표 컷 82장
+```
+
+LLM에 도달하기 전에 대상을 줄이는 것이 핵심입니다. 800장을 전부 LLM에 던지면 비용과 시간이 몇 배가 됩니다.
+전달 이미지도 원본이 아니라 축소본(512~768px)을 씁니다. 토큰 비용은 해상도에 비례합니다.
+
+## 목업 범위
+
+- 서버, DB, 로그인, 실제 AI API 호출은 구현하지 않았습니다
+- 데이터는 `src/data/*.ts` 에 하드코딩돼 있고, 실제 DB 스키마와 형태를 맞춰 뒀습니다
+- 사진은 라벨명이 적힌 회색 자리표시자입니다
+- AI 산출물에는 `AI 결과 (모의)` 배지를 붙여 어디까지가 확정 로직이고 어디부터가 가정인지 구분했습니다
+
+## 실행
+
+```bash
+npm install
+npm run dev     # http://localhost:3000
+npm run build
+```
+
+## 스택
+
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4. 상태관리 라이브러리 없음(`useState`).

@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* 색은 상태 전달에만 사용. 장식용 색 없음 */
+  --color-fg: #37352F;
+  --color-fg-muted: #787774;
+  --color-fg-subtle: #9B9A97;
+
+  --color-canvas: #FFFFFF;
+  --color-surface: #F7F6F3;
+  --color-line: #E9E9E7;
+  --color-line-strong: #DFDFDE;
+
+  --color-warn: #D9730D;
+  --color-danger: #E03E3E;
+  --color-success: #0F7B6C;
+
+  /* AI 산출물 전용 단일 색 */
+  --color-ai: #6940A5;
+  --color-ai-bg: #F4F0F8;
+
+  /* 타이포 5단계로 제한 */
+  --text-badge: 11px;
+  --text-badge--line-height: 16px;
+  --text-body: 13px;
+  --text-body--line-height: 20px;
+  --text-ui: 14px;
+  --text-ui--line-height: 20px;
+  --text-section: 16px;
+  --text-section--line-height: 24px;
+  --text-page: 22px;
+  --text-page--line-height: 30px;
+
+  --radius-box: 4px;
+
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 20px;
+  font-weight: 400;
+}
+
+/* 숫자 정렬용 */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 사용자 동작에 대한 반응에만 모션 */
+@keyframes tab-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.tab-panel {
+  animation: tab-in 120ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-panel {
+    animation: none;
+  }
+}
+
+/* 스크롤바 (칸반 보드 가로 스크롤) */
+.thin-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 4px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
