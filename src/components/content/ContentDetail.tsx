@@ -111,7 +111,7 @@ export function ContentDetail({
           <UploadTab content={content} analysis={analysis} photos={photos} />
         ) : null}
         {tab === "retouch" ? (
-          <RetouchTab content={content} analysis={analysis} photos={photos} />
+          <RetouchTab content={content} photos={photos} />
         ) : null}
         {tab === "publish" ? <PublishTab content={content} acc={acc} photos={photos} /> : null}
       </div>

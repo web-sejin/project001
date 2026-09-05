@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/Button";
 import { InfoTip } from "@/components/ui/InfoTip";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
+import { AssignPanel, RetouchFlow } from "./AssignPanel";
 import { CompareView, type Pin } from "./CompareView";
 import { ToneChart } from "./ToneChart";
 import { flagCounts } from "@/data/photos";
 import { useStore } from "@/store/MockStore";
-import type { ContentAnalysis } from "@/data/analysis";
 import type { ApprovalStatus, Content, Photo, ReviewFlag } from "@/data/types";
 
 const FLAG_METHOD: Record<ReviewFlag, string> = {
@@ -26,11 +26,9 @@ type Filter = "전체" | "플래그" | "대기" | "반려" | "승인";
 
 export function RetouchTab({
   content,
-  analysis,
   photos,
 }: {
   content: Content;
-  analysis: ContentAnalysis;
   photos: Photo[];
 }) {
   const { axMode } = useStore();
@@ -44,14 +42,36 @@ export function RetouchTab({
   const [filter, setFilter] = useState<Filter>("전체");
   const [selectedId, setSelectedId] = useState<string | null>(pool[0]?.id ?? null);
 
-  if (content.status === "촬영예정" || content.status === "촬영완료") {
+  if (content.status === "촬영예정") {
     return (
       <Panel>
         <div className="p-4 text-body text-fg-muted">
-          아직 보정 단계가 아닙니다. 셀렉이 확정되면 리터처를 배정하고 원본을
-          전달합니다.
+          아직 촬영 전입니다. 촬영과 업로드가 끝나면 리터처를 배정합니다.
         </div>
       </Panel>
+    );
+  }
+
+  // 아직 배정 전이면 배정 화면만 보여준다. 검수할 결과물이 없기 때문이다.
+  if (content.status === "촬영완료") {
+    return (
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+        <AssignPanel content={content} />
+        <Panel>
+          <PanelHeader title="보정 흐름" description="어디까지가 시스템인지" />
+          <div className="p-4">
+            <RetouchFlow />
+            <p className="mt-3 text-body leading-[19px] text-fg-muted">
+              보정은 수동입니다. 리터처가 라이트룸에서 직접 합니다. 시스템이 하는 건
+              누구에게 언제 맡겼는지 기록하고, 결과가 올라오면 사람이 볼 대상을 좁혀
+              주고, 반려 사유를 남기는 것입니다.
+            </p>
+            <p className="mt-2 text-body leading-[19px] text-fg-muted">
+              배정하면 상태가 보정중으로 넘어가고 정체 일수 계산이 시작됩니다.
+            </p>
+          </div>
+        </Panel>
+      </div>
     );
   }
 
@@ -85,32 +105,7 @@ export function RetouchTab({
   return (
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-3">
-        <Panel>
-          <PanelHeader title="리터처 배정" />
-          <dl className="divide-y divide-line text-body">
-            <Row label="담당자" value={content.retoucher ?? "미배정"} />
-            {analysis.coRetoucher ? (
-              <Row label="공동" value={analysis.coRetoucher} />
-            ) : null}
-            <Row label="배정일" value={content.statusChangedAt} />
-            <Row
-              label="정체"
-              value={
-                content.stuckDays >= 7 ? (
-                  <span className="text-danger">{content.stuckDays}일 경과</span>
-                ) : (
-                  `${content.stuckDays}일 경과`
-                )
-              }
-            />
-          </dl>
-          <div className="border-t border-line bg-surface px-4 py-2.5">
-            <p className="text-badge leading-[16px] text-fg-muted">
-              보정 작업 자체는 라이트룸에서 일어납니다. 시스템은 배정·전달·검수·이력만
-              관리합니다.
-            </p>
-          </div>
-        </Panel>
+        <AssignPanel content={content} />
 
         {axMode ? (
           <>
@@ -119,7 +114,7 @@ export function RetouchTab({
               <PanelHeader
                 tone="ai"
                 title="1차 검수"
-                description="볼 대상을 좁혀줄 뿐 승인 판단은 하지 않습니다."
+                description="보정 결과가 올라오면 수평·노출·색온도·눈감음이 의심되는 컷만 표시합니다. 볼 대상을 좁혀줄 뿐 승인 판단은 하지 않습니다."
                 right={<AiBadge />}
               />
               <ul className="divide-y divide-line">
@@ -374,15 +369,6 @@ export function RetouchTab({
           ) : null}
         </div>
       </Panel>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex gap-3 px-4 py-2">
-      <dt className="w-16 shrink-0 text-fg-subtle">{label}</dt>
-      <dd className="min-w-0 flex-1 text-fg">{value}</dd>
     </div>
   );
 }

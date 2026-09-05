@@ -130,6 +130,8 @@ export interface Content {
   statusChangedAt: string;
   stuckDays: number;
   reshootCount: number;
+  /** 보정 마감일. 배정할 때 정한다 */
+  dueDate?: string;
 }
 
 export type ApprovalStatus = "승인" | "반려" | "대기";
