@@ -72,6 +72,7 @@ interface StoreValue {
   uploadsOf: (contentId: string) => UploadedPhoto[];
   addUploads: (contentId: string, photos: UploadedPhoto[]) => void;
   setUploadLabel: (contentId: string, photoId: string, label: string) => void;
+  removeUpload: (contentId: string, photoId: string) => void;
   clearUploads: (contentId: string) => void;
 
   accommodationOf: (id: string) => Accommodation | undefined;
@@ -197,6 +198,15 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const removeUpload = useCallback((contentId: string, photoId: string) => {
+    setUploads((prev) => {
+      const list = prev[contentId] ?? [];
+      const target = list.find((p) => p.id === photoId);
+      if (target) URL.revokeObjectURL(target.url);
+      return { ...prev, [contentId]: list.filter((p) => p.id !== photoId) };
+    });
+  }, []);
+
   const clearUploads = useCallback((contentId: string) => {
     setUploads((prev) => {
       (prev[contentId] ?? []).forEach((p) => URL.revokeObjectURL(p.url));
@@ -245,6 +255,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
       uploadsOf: (contentId) => uploads[contentId] ?? [],
       addUploads,
       setUploadLabel,
+      removeUpload,
       clearUploads,
       accommodationOf,
       contentOf,
@@ -284,6 +295,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     savePublication,
     addUploads,
     setUploadLabel,
+    removeUpload,
     clearUploads,
   ]);
 

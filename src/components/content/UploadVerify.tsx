@@ -271,6 +271,16 @@ export function UploadVerify({ content }: { content: Content }) {
                               {v.reason}
                             </span>
                           ) : null}
+                          <button
+                            type="button"
+                            onClick={() => store.removeUpload(content.id, f.id)}
+                            aria-label={`${f.name} 삭제`}
+                            title="이 사진 삭제"
+                            className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-box border border-line-strong bg-canvas/90 text-badge font-semibold text-fg-muted hover:border-danger hover:text-danger"
+                          >
+                            ×
+                          </button>
+
                         </div>
                         <figcaption className="mt-1">
                           {axMode ? (
@@ -314,28 +324,26 @@ export function UploadVerify({ content }: { content: Content }) {
             ) : null}
           </div>
 
-          {files.length === 0 ? (
-            <div className="border-t border-line bg-surface px-4 py-2.5">
-              {simulating || simDone > 0 ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-badge text-fg-muted">
-                    <span>샘플 업로드 중</span>
-                    <span className="tnum">{simDone} / 800</span>
-                  </div>
-                  <Meter value={simDone} max={800} tone="ai" />
+          <div className="border-t border-line bg-surface px-4 py-2.5">
+            {simulating || simDone > 0 ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-badge text-fg-muted">
+                  <span>샘플 업로드 중</span>
+                  <span className="tnum">{simDone} / 800</span>
                 </div>
-              ) : (
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-badge text-fg-muted">
-                    올릴 사진이 없으면 샘플 800장으로 흐름만 볼 수 있습니다.
-                  </p>
-                  <Button size="sm" onClick={() => setSimulating(true)}>
-                    샘플 800장으로 진행
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : null}
+                <Meter value={simDone} max={800} tone="ai" />
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-badge text-fg-muted">
+                  올릴 사진 없이 한 건 분량(800장) 흐름만 보고 싶을 때 씁니다.
+                </p>
+                <Button size="sm" onClick={() => setSimulating(true)}>
+                  샘플 800장으로 진행
+                </Button>
+              </div>
+            )}
+          </div>
         </Panel>
       </div>
 

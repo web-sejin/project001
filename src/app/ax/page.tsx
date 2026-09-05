@@ -187,8 +187,9 @@ export default function AxPage() {
         <section>
           <h2 className="text-section font-semibold text-fg">처리 순서가 비용입니다</h2>
           <p className="mt-1 text-body leading-[21px] text-fg-muted">
-            800장을 전부 LLM에 던지면 비용과 시간이 몇 배가 됩니다. 앞단에서 싼 방법으로
-            걸러내고, 의미 판단이 필요한 것만 넘깁니다.
+            800장을 전부 큰 AI에 던지면 비용과 시간이 몇 배가 됩니다. 앞단에서 싼
+            방법으로 걸러내고, 의미 판단이 필요한 것만 넘깁니다. 아래 숫자는 한 건에
+            800장을 찍었다고 가정한 예시이며, 실제 비율은 촬영 습관에 따라 달라집니다.
           </p>
 
           <Panel className="mt-3">

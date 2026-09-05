@@ -22,7 +22,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-box border px-1.5 py-0.5 text-badge font-medium whitespace-nowrap ${STYLES[variant]} ${className}`}
+      className={`inline-flex max-w-full items-center gap-1 rounded-box border px-1.5 py-0.5 text-badge font-medium break-keep ${STYLES[variant]} ${className}`}
     >
       {children}
     </span>

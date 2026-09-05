@@ -131,13 +131,24 @@ export function ReshootUpload({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
               {files.map((f) => (
                 <figure key={f.id} className="min-w-0">
-                  {/* 방금 고른 로컬 파일이라 next/image 를 쓰지 않는다 */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={f.url}
-                    alt={f.name}
-                    className="aspect-[4/3] w-full rounded-box border border-line object-cover"
-                  />
+                  <div className="relative">
+                    {/* 방금 고른 로컬 파일이라 next/image 를 쓰지 않는다 */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={f.url}
+                      alt={f.name}
+                      className="aspect-[4/3] w-full rounded-box border border-line object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => store.removeUpload(content.id, f.id)}
+                      aria-label={`${f.name} 삭제`}
+                      title="이 사진 삭제"
+                      className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-box border border-line-strong bg-canvas/90 text-badge font-semibold text-fg-muted hover:border-danger hover:text-danger"
+                    >
+                      ×
+                    </button>
+                  </div>
                   <figcaption className="mt-1">
                     <select
                       value={f.label}
