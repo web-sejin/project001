@@ -51,8 +51,9 @@ export function UploadTab({
     <div className="space-y-4">
       {/* 누락 탐지는 AI가 만들어낸 신호라 AX 토글에 묶는다 */}
       {axMode ? (
-        <Panel className={openMissing.length ? "border-danger/40" : "border-ai-line"}>
+        <Panel tone="ai">
           <PanelHeader
+            tone="ai"
             title={
               openMissing.length ? (
                 <span className="text-danger">누락 의심 {openMissing.length}건</span>
@@ -154,8 +155,9 @@ export function UploadTab({
         </Panel>
 
         {axMode ? (
-          <Panel className="border-ai-line">
+          <Panel tone="ai">
             <PanelHeader
+              tone="ai"
               title="셀렉 후보"
               description={`${analysis.total}장 → ${analysis.recommended}장`}
               right={<AiBadge />}
@@ -188,8 +190,9 @@ export function UploadTab({
 
       {axMode ? <AxNote id="ax-03" /> : null}
 
-      <Panel>
+      <Panel tone={axMode ? "ai" : "default"}>
         <PanelHeader
+          tone={axMode ? "ai" : "default"}
           title={axMode ? "분류 결과" : "업로드된 사진"}
           description={
             axMode
@@ -250,7 +253,7 @@ export function UploadTab({
                 </div>
                 {axMode ? (
                   <figcaption className="mt-1 flex items-center justify-between gap-1">
-                    <span className="min-w-0 truncate text-badge text-fg">
+                    <span className="min-w-0 truncate text-badge font-medium text-ai">
                       {p.aiLabel}
                     </span>
                     <span

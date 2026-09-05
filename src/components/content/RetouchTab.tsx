@@ -114,8 +114,9 @@ export function RetouchTab({
 
         {axMode ? (
           <>
-            <Panel className="border-ai-line">
+            <Panel tone="ai">
               <PanelHeader
+                tone="ai"
                 title="1차 검수"
                 description="볼 대상을 좁혀줄 뿐 승인 판단은 하지 않습니다."
                 right={<AiBadge />}

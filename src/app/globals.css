@@ -23,11 +23,13 @@
   --color-ai-bg: #F3EFFA;
   --color-ai-line: #D9CCEC;
 
-  /* 사이드바 전용 */
-  --color-nav: #3B2C5C;
-  --color-nav-soft: #4C3A73;
-  --color-nav-fg: #DDD6EC;
-  --color-nav-muted: #A99BC6;
+  /* 사이드바 — 중립 다크.
+     보라를 여기에 쓰면 브랜드 색이 되어 버려서 AI 표시가 묻힌다.
+     보라는 AI 산출물 전용으로만 남긴다. */
+  --color-nav: #2A2833;
+  --color-nav-soft: #3B3846;
+  --color-nav-fg: #C9C7D1;
+  --color-nav-muted: #8F8C9C;
 
   /* 타이포 */
   --text-badge: 11px;

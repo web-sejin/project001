@@ -39,7 +39,7 @@ export function Sidebar() {
                 aria-current={active ? "page" : undefined}
                 className={`mb-0.5 block rounded-box px-2.5 py-1.5 text-body ${
                   active
-                    ? "bg-white font-semibold text-ai"
+                    ? "bg-white font-semibold text-fg"
                     : "text-nav-fg hover:bg-nav-soft"
                 }`}
               >
@@ -84,7 +84,7 @@ export function Sidebar() {
                 aria-current={active ? "page" : undefined}
                 className={`shrink-0 rounded-box px-2.5 py-1 text-body ${
                   active
-                    ? "bg-white font-semibold text-ai"
+                    ? "bg-white font-semibold text-fg"
                     : "text-nav-fg hover:bg-nav-soft"
                 }`}
               >
@@ -112,7 +112,7 @@ function AxToggle({
   setAxMode: (n: boolean) => void;
 }) {
   return (
-    <div className="mx-2 mb-3 rounded-box bg-nav-soft p-3">
+    <div className="mx-2 mb-3 rounded-box border border-ai/50 border-l-[3px] border-l-ai bg-nav-soft p-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-body font-semibold text-white">AX 개선 아이디어</span>
         <Toggle
@@ -122,11 +122,25 @@ function AxToggle({
           onChange={setAxMode}
         />
       </div>
-      <p className="mt-1.5 text-badge leading-[15px] text-nav-muted">
-        {axMode
-          ? "각 단계에 AI · 자동화를 어디에 넣을지 표시하고 있습니다."
-          : "지금 쓰고 있을 법한 관리 화면입니다. 켜면 개선 지점이 보입니다."}
-      </p>
+      {axMode ? (
+        <>
+          <p className="mt-2 flex items-center gap-1.5 text-badge text-nav-fg">
+            <span
+              aria-hidden
+              className="inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] bg-ai"
+            />
+            보라색으로 표시된 곳이 AI가 개입하는 지점입니다
+          </p>
+          <p className="mt-1 text-badge leading-[15px] text-nav-muted">
+            끄면 지금 쓰고 있을 법한 관리 화면이 됩니다.
+          </p>
+        </>
+      ) : (
+        <p className="mt-2 text-badge leading-[15px] text-nav-muted">
+          지금 쓰고 있을 법한 관리 화면입니다. 켜면 어디에 AI·자동화를 넣을지
+          보입니다.
+        </p>
+      )}
     </div>
   );
 }

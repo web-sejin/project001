@@ -1,37 +1,52 @@
 import type { ReactNode } from "react";
 
-/** 테두리로 구조를 만든다. 그림자 아님. */
+type Tone = "default" | "ai";
+
+/**
+ * 테두리로 구조를 만든다. 그림자 아님.
+ *
+ * tone="ai" 는 AI 산출물이 들어 있는 패널이다.
+ * 왼쪽에 보라 굵은 바를 세워서 스크롤 중에도 어디가 AI인지 바로 보이게 한다.
+ */
 export function Panel({
   children,
+  tone = "default",
   className = "",
 }: {
   children: ReactNode;
+  tone?: Tone;
   className?: string;
 }) {
   return (
     <section
-      className={`overflow-hidden rounded-box border border-line-strong bg-canvas ${className}`}
+      className={`overflow-hidden rounded-box border bg-canvas ${
+        tone === "ai"
+          ? "border-ai-line border-l-[3px] border-l-ai"
+          : "border-line-strong"
+      } ${className}`}
     >
       {children}
     </section>
   );
 }
 
-/**
- * 패널 헤더에 배경을 채워 본문과 확실히 갈라 놓는다.
- * 전부 흰 박스에 회색 선만 있으면 화면이 밋밋하고 위계가 안 보인다.
- */
 export function PanelHeader({
   title,
   right,
   description,
+  tone = "default",
 }: {
   title: ReactNode;
   right?: ReactNode;
   description?: ReactNode;
+  tone?: Tone;
 }) {
   return (
-    <header className="flex flex-wrap items-start justify-between gap-2 border-b border-line-strong bg-surface px-4 py-2.5">
+    <header
+      className={`flex flex-wrap items-start justify-between gap-2 border-b px-4 py-2.5 ${
+        tone === "ai" ? "border-ai-line bg-ai-bg" : "border-line-strong bg-surface"
+      }`}
+    >
       <div className="min-w-0">
         <h2 className="text-section font-semibold text-fg">{title}</h2>
         {description ? (
@@ -55,13 +70,4 @@ export function PanelBody({
   className?: string;
 }) {
   return <div className={`p-4 ${className}`}>{children}</div>;
-}
-
-/** 패널 하단의 근거·해설 영역 */
-export function PanelNote({ children }: { children: ReactNode }) {
-  return (
-    <div className="border-t border-line bg-surface px-4 py-2.5">
-      <p className="text-badge leading-[16px] text-fg-muted">{children}</p>
-    </div>
-  );
 }

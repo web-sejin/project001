@@ -162,8 +162,9 @@ export function PublishTab({
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-            <Panel>
+            <Panel tone="ai">
               <PanelHeader
+                tone="ai"
                 title={`${active.name} · ${active.ratio}`}
                 description={`채널 규격 ${active.maxPhotos}장 중 ${set.length}장 생성됨`}
                 right={<AiBadge label="피사체 인식 크롭" />}
@@ -182,8 +183,9 @@ export function PublishTab({
             </Panel>
 
             <div className="space-y-4">
-              <Panel className="border-ai-line">
+              <Panel tone="ai">
                 <PanelHeader
+                  tone="ai"
                   title="카피 초안"
                   description={copy.meta}
                   right={<AiBadge label="AI 초안" />}
