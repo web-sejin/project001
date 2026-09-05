@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 type Variant = "neutral" | "ai" | "success" | "warn" | "danger" | "outline";
 
 const STYLES: Record<Variant, string> = {
-  neutral: "bg-surface text-fg-muted border-line",
-  ai: "bg-ai-bg text-ai border-ai/20",
-  success: "bg-[#EDF4F2] text-success border-success/20",
-  warn: "bg-[#FBF0E4] text-warn border-warn/20",
-  danger: "bg-[#FBEBEB] text-danger border-danger/20",
+  neutral: "bg-surface text-fg-muted border-line-strong",
+  ai: "bg-ai-bg text-ai border-ai-line",
+  success: "bg-[#E8F2F0] text-success border-[#B9D9D3]",
+  warn: "bg-[#FBF0E2] text-warn border-[#EDCFA6]",
+  danger: "bg-[#FBEAEA] text-danger border-[#EFC2C1]",
   outline: "bg-canvas text-fg-muted border-line-strong",
 };
 
@@ -33,7 +33,9 @@ export function Badge({
 export function AiBadge({ label = "AI 결과 (모의)" }: { label?: string }) {
   return (
     <Badge variant="ai">
-      <span aria-hidden className="text-[9px] leading-none">◆</span>
+      <span aria-hidden className="text-[9px] leading-none">
+        ◆
+      </span>
       {label}
     </Badge>
   );

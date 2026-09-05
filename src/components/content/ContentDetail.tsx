@@ -100,7 +100,7 @@ export function ContentDetail({
                 onClick={() => setTab(t.key)}
                 className={`shrink-0 border-b-2 px-3 py-2 text-body transition-colors ${
                   tab === t.key
-                    ? "border-fg font-medium text-fg"
+                    ? "border-ai font-semibold text-ai"
                     : "border-transparent text-fg-muted hover:text-fg"
                 }`}
               >

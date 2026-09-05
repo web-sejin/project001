@@ -96,7 +96,7 @@ export function CompareView({
           value={split}
           aria-label="원본 보정본 비교 슬라이더"
           onChange={(e) => setSplit(Number(e.target.value))}
-          className="h-1 flex-1 accent-[#37352F]"
+          className="h-1 flex-1 accent-[#6940A5]"
         />
       </div>
     </div>

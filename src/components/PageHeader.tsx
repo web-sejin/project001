@@ -36,24 +36,3 @@ export function PageHeader({
     </header>
   );
 }
-
-/**
- * 섹션 단위 해설.
- * 실제 운영 화면이면서 동시에 "이 기능이 왜 여기 있는지"를 설명하는 문서이기도 하다.
- */
-export function Explain({
-  label = "이 섹션",
-  children,
-}: {
-  label?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="border-l-2 border-line-strong bg-surface py-2 pr-3 pl-3">
-      <p className="text-badge leading-[16px] text-fg-muted">
-        <span className="font-semibold text-fg">{label}</span>{" "}
-        {children}
-      </p>
-    </div>
-  );
-}
