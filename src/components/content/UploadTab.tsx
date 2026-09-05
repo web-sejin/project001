@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { AiBadge, AxNote, TierBadge } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -9,8 +9,8 @@ import { Meter } from "@/components/ui/Meter";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { Toggle } from "@/components/ui/Toggle";
+import { UploadVerify } from "./UploadVerify";
 import type { ContentAnalysis } from "@/data/analysis";
-import { TODAY } from "@/data/contents";
 import { useStore } from "@/store/MockStore";
 import type { Content, Photo } from "@/data/types";
 
@@ -37,7 +37,7 @@ export function UploadTab({
   const lowConfidence = photos.filter((p) => p.confidence < 0.8).length;
 
   if (content.status === "촬영예정") {
-    return <PreviewUpload content={content} />;
+    return <UploadVerify content={content} />;
   }
 
   const visible = photos.filter((p) => {
@@ -282,135 +282,6 @@ export function UploadTab({
           </p>
         </div>
       </Panel>
-    </div>
-  );
-}
-
-/**
- * 업로드 진입점.
- *
- * 실제 파일 전송은 구현하지 않는다. 서버도 스토리지도 없다.
- * 다만 사진이 시스템에 들어오는 자리가 없으면 흐름이 끊긴다.
- * 파일을 고르면 그 장수를 총량으로 잡고 상태 전이까지 재현한다.
- */
-function PreviewUpload({ content }: { content: Content }) {
-  const store = useStore();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [picked, setPicked] = useState<number | null>(null);
-  const [phase, setPhase] = useState<"idle" | "uploading" | "analyzing">("idle");
-  const [done, setDone] = useState(0);
-
-  const total = picked ?? 800;
-
-  useEffect(() => {
-    if (phase !== "uploading" || done >= total) return;
-    const t = setTimeout(() => {
-      const next = Math.min(total, done + Math.ceil(total / 18));
-      setDone(next);
-      if (next >= total) setPhase("analyzing");
-    }, 90);
-    return () => clearTimeout(t);
-  }, [phase, done, total]);
-
-  useEffect(() => {
-    if (phase !== "analyzing") return;
-    const t = setTimeout(
-      () =>
-        store.updateContent(content.id, {
-          status: "촬영완료",
-          statusChangedAt: TODAY,
-          stuckDays: 0,
-        }),
-      1400,
-    );
-    return () => clearTimeout(t);
-  }, [phase, store, content.id]);
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <Panel>
-        <PanelHeader
-          title="사진 업로드"
-          description="촬영이 끝나면 카드에서 JPG를 복사해 올립니다. 원본 RAW는 복귀 후 올립니다."
-        />
-        <div className="p-4">
-          {phase === "idle" ? (
-            <>
-              <div className="rounded-box border border-dashed border-line-strong bg-surface px-4 py-8 text-center">
-                <p className="text-body font-semibold text-fg">
-                  파일을 끌어다 놓거나 선택하세요
-                </p>
-                <p className="mt-1 text-badge text-fg-muted">
-                  JPG · 한 건당 보통 700~900장
-                </p>
-                <input
-                  ref={inputRef}
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => setPicked(e.target.files?.length ?? null)}
-                />
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                  <Button onClick={() => inputRef.current?.click()}>파일 선택</Button>
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      setDone(0);
-                      setPhase("uploading");
-                    }}
-                  >
-                    {picked ? `${picked}장 업로드` : "샘플 800장으로 업로드"}
-                  </Button>
-                </div>
-                {picked ? (
-                  <p className="mt-2 text-badge text-fg-muted">
-                    <span className="tnum">{picked}</span>장 선택됨
-                  </p>
-                ) : null}
-              </div>
-              <p className="mt-3 text-badge leading-[16px] text-fg-muted">
-                목업이라 파일이 실제로 전송되지는 않습니다. 고른 장수만 읽어서 이후
-                흐름(업로드 → 상태 전환 → 분류)을 재현합니다.
-              </p>
-            </>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-body">
-                <span className="text-fg-muted">
-                  {phase === "uploading" ? "업로드 중" : "분류 중"}
-                </span>
-                <span className="tnum font-semibold text-fg">
-                  {done} / {total}
-                </span>
-              </div>
-              <Meter value={done} max={total} tone="ai" />
-            </div>
-          )}
-        </div>
-      </Panel>
-
-      <div className="space-y-4">
-        <Panel>
-          <PanelHeader title="업로드 후" />
-          <ol className="divide-y divide-line text-body">
-            <li className="px-4 py-2.5">
-              <span className="font-semibold text-fg">상태가 촬영완료로 바뀝니다</span>
-              <span className="mt-px block text-badge text-fg-muted">
-                현황판 보드에서 칼럼이 이동합니다
-              </span>
-            </li>
-            <li className="px-4 py-2.5">
-              <span className="font-semibold text-fg">체크리스트와 대조합니다</span>
-              <span className="mt-px block text-badge text-fg-muted">
-                빠진 공간이 있으면 경고가 뜹니다
-              </span>
-            </li>
-          </ol>
-        </Panel>
-
-        <AxNote id="ax-02" />
-      </div>
     </div>
   );
 }

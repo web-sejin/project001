@@ -23,13 +23,14 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden w-52 shrink-0 flex-col bg-nav lg:flex">
+      {/* 뷰포트에 고정한다. 본문이 길어져도 AX 토글이 항상 보여야 한다 */}
+      <aside className="sticky top-0 hidden h-screen w-52 shrink-0 flex-col bg-nav lg:flex">
         <div className="px-4 py-4">
           <p className="text-ui font-semibold text-white">콘텐츠 제작 운영</p>
           <p className="mt-0.5 text-badge text-nav-muted">트립일레븐 내부 도구</p>
         </div>
 
-        <nav className="flex-1 px-2">
+        <nav className="thin-scroll min-h-0 flex-1 overflow-y-auto px-2">
           {NAV.map((item) => {
             const active = isActive(pathname, item.href);
             return (
