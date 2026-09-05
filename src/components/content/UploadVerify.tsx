@@ -14,47 +14,11 @@ import {
   type ImageMetrics,
   type SelectVerdict,
 } from "@/lib/imageMetrics";
+import { LabelTabs, buildLabelTabs } from "./LabelTabs";
+import { UNCLASSIFIED, countByLabel, guessLabel } from "@/lib/photoLabel";
 import { TODAY } from "@/data/contents";
 import { useStore } from "@/store/MockStore";
 import type { Content, ShotItem, UploadedPhoto } from "@/data/types";
-
-const UNCLASSIFIED = "미분류";
-
-/**
- * 파일명에서 공간 유형을 추정한다.
- *
- * 실제 시스템은 여기서 LLM 비전으로 이미지를 분류한다.
- * 목업에는 모델이 없으므로 파일명만 본다. 못 알아보면 미분류로 두고
- * 사람이 직접 고르게 한다 — 실제 시스템에서도 사람이 뒤집을 수 있어야 한다.
- *
- * 반면 아래 셀렉(흔들림·노출·중복)과 체크리스트 대조는 연산이라
- * 목업에서도 진짜로 돌린다.
- */
-const KEYWORDS: Array<[string, string[]]> = [
-  ["수영장 야간", ["poolnight", "pool-night", "pool_night", "수영장야간", "야간수영"]],
-  ["야간 전경", ["night", "야간", "야경", "nightview"]],
-  ["수영장", ["pool", "수영장", "swim"]],
-  ["욕실", ["bath", "욕실", "화장실", "shower", "toilet", "restroom"]],
-  ["객실", ["room", "bed", "객실", "침실", "guestroom"]],
-  ["외관", ["exterior", "facade", "외관", "front", "outside", "building"]],
-  ["로비 · 공용 라운지", ["lobby", "lounge", "로비", "라운지"]],
-  ["조식장", ["breakfast", "조식", "dining", "다이닝", "restaurant"]],
-  ["바비큐존", ["bbq", "barbecue", "grill", "바비큐", "그릴"]],
-  ["스파 · 사우나", ["spa", "sauna", "스파", "사우나", "찜질"]],
-  ["반려동물 전용 공간", ["pet", "dog", "반려", "애견"]],
-  ["정원 · 테라스", ["garden", "terrace", "patio", "정원", "테라스", "야외"]],
-];
-
-function guessLabel(fileName: string, labels: string[]): string {
-  const name = fileName.toLowerCase();
-  const direct = labels.find((l) => name.includes(l.toLowerCase()));
-  if (direct) return direct;
-  for (const [label, words] of KEYWORDS) {
-    if (!labels.includes(label)) continue;
-    if (words.some((w) => name.includes(w))) return label;
-  }
-  return UNCLASSIFIED;
-}
 
 const RENDER_CAP = 60;
 
@@ -67,6 +31,7 @@ export function UploadVerify({ content }: { content: Content }) {
   const [metrics, setMetrics] = useState<Record<string, ImageMetrics>>({});
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [recommendedOnly, setRecommendedOnly] = useState(false);
+  const [labelTab, setLabelTab] = useState("전체");
 
   const axMode = store.axMode;
   const files = store.uploadsOf(content.id);
@@ -127,11 +92,9 @@ export function UploadVerify({ content }: { content: Content }) {
   const recommended = files.filter((f) => verdicts[f.id]?.reason == null);
 
   /* ---- 대조: 라벨별 장수를 세서 체크리스트의 필요 수량과 견준다 ---- */
-  const counts = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const f of recommended) map[f.label] = (map[f.label] ?? 0) + 1;
-    return map;
-  }, [recommended]);
+  const counts = useMemo(() => countByLabel(recommended), [recommended]);
+  // 탭에는 제외된 컷까지 포함한 전체 분포를 보여준다
+  const allCounts = useMemo(() => countByLabel(files), [files]);
 
   const rows = shotList.map((item: ShotItem) => ({
     ...item,
@@ -142,9 +105,12 @@ export function UploadVerify({ content }: { content: Content }) {
   const missing = required.filter((r) => r.current < r.minCount);
   const unclassified = counts[UNCLASSIFIED] ?? 0;
 
-  const visible = recommendedOnly
-    ? files.filter((f) => verdicts[f.id]?.reason == null)
-    : files;
+  const tabs = buildLabelTabs(shotList, allCounts);
+  const visible = files.filter((f) => {
+    if (recommendedOnly && verdicts[f.id]?.reason != null) return false;
+    if (labelTab !== "전체" && f.label !== labelTab) return false;
+    return true;
+  });
 
   // 샘플 시뮬레이션 (올릴 사진이 없을 때 흐름만 보기 위한 경로)
   useEffect(() => {
@@ -268,6 +234,21 @@ export function UploadVerify({ content }: { content: Content }) {
                   </label>
                   ) : null}
                 </div>
+
+                {axMode ? (
+                  <div className="mb-2">
+                    <LabelTabs
+                      tabs={tabs}
+                      total={files.length}
+                      active={labelTab}
+                      onChange={setLabelTab}
+                    />
+                    <p className="mt-1.5 text-badge text-fg-subtle">
+                      이 숙소가 찍어야 하는 공간 전부를 늘어놓습니다. 0장인 항목이
+                      곧 아직 못 찍은 컷입니다.
+                    </p>
+                  </div>
+                ) : null}
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
                   {visible.slice(0, RENDER_CAP).map((f) => {

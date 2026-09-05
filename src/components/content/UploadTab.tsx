@@ -9,7 +9,9 @@ import { Meter } from "@/components/ui/Meter";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { Toggle } from "@/components/ui/Toggle";
+import { ReshootUpload } from "./ReshootUpload";
 import { UploadVerify } from "./UploadVerify";
+import { countByLabel } from "@/lib/photoLabel";
 import type { ContentAnalysis } from "@/data/analysis";
 import { useStore } from "@/store/MockStore";
 import type { Content, Photo } from "@/data/types";
@@ -34,11 +36,19 @@ export function UploadTab({
     [photos],
   );
 
-  const openMissing = analysis.missing.filter((m) => !dismissed.includes(m.label));
+  // 나중에 올린 재촬영분을 누락 계산에 더한다. 다시 찍어 올렸으면 경고가 사라져야 한다.
+  const extra = store.uploadsOf(content.id);
+  const extraCounts = countByLabel(extra);
+  const openMissing = analysis.missing
+    .filter((m) => !dismissed.includes(m.label))
+    .map((m) => ({ ...m, found: m.found + (extraCounts[m.label] ?? 0) }))
+    .filter((m) => m.found < m.required);
+  const resolved = analysis.missing
+    .filter((m) => !dismissed.includes(m.label))
+    .filter((m) => m.found + (extraCounts[m.label] ?? 0) >= m.required);
   const lowConfidence = photos.filter((p) => p.confidence < 0.8).length;
 
-  // 직접 올린 사진이 있으면 그쪽이 우선이다. 시드 더미(800장)를 덮어쓴다.
-  if (content.status === "촬영예정" || store.uploadsOf(content.id).length > 0) {
+  if (content.status === "촬영예정") {
     return <UploadVerify content={content} />;
   }
 
@@ -80,6 +90,12 @@ export function UploadTab({
             {openMissing.length === 0 ? (
               <p className="text-body text-fg-muted">
                 필수 컷이 모두 확보됐습니다.
+                {resolved.length > 0 ? (
+                  <span className="text-success">
+                    {" "}
+                    ({resolved.map((r) => r.label).join(", ")} — 추가 업로드로 해소)
+                  </span>
+                ) : null}
                 {dismissed.length > 0 ? (
                   <span className="text-fg-subtle">
                     {" "}
@@ -287,6 +303,8 @@ export function UploadTab({
           </p>
         </div>
       </Panel>
+
+      <ReshootUpload content={content} missing={openMissing} />
     </div>
   );
 }
