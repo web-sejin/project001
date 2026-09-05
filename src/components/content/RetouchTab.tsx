@@ -14,6 +14,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { RetouchedUpload } from "./RetouchedUpload";
 import { ToneChart } from "./ToneChart";
 import { flagCounts } from "@/data/photos";
+import { TODAY } from "@/data/contents";
 import { useStore } from "@/store/MockStore";
 import type { ApprovalStatus, Content, Photo, ReviewFlag } from "@/data/types";
 
@@ -49,6 +50,13 @@ export function RetouchTab({
   const [filter, setFilter] = useState<Filter>("전체");
   const [selectedId, setSelectedId] = useState<string | null>(pool[0]?.id ?? null);
   const [retouchedOpen, setRetouchedOpen] = useState(false);
+
+  // 보정본이 원본과 다 짝지어져야 검수로 넘길 수 있다.
+  // 짝을 못 찾은 게 남아 있으면 어떤 컷을 승인하는지 모르는 채로 넘어가게 된다.
+  const retouchedFiles = store.retouchedOf(content.id);
+  const unmatchedCount = retouchedFiles.filter((r) => !r.originalId).length;
+  const canComplete =
+    retouchedFiles.length > 0 && unmatchedCount === 0 && content.status === "보정중";
 
   if (content.status === "촬영예정") {
     return (
@@ -397,6 +405,43 @@ export function RetouchTab({
         title="보정본 업로드"
         description="리터처가 내보낸 파일을 올리면 파일명으로 원본과 짝을 맞춥니다."
         width="760px"
+        footer={
+          <>
+            {retouchedFiles.length === 0 ? (
+              <span className="mr-auto text-badge text-fg-muted">
+                보정본을 올리면 완료할 수 있습니다
+              </span>
+            ) : unmatchedCount > 0 ? (
+              <span className="mr-auto text-badge font-semibold text-warn">
+                {unmatchedCount}건이 아직 짝지어지지 않았습니다. 원본을 지정해야
+                완료할 수 있습니다
+              </span>
+            ) : content.status !== "보정중" ? (
+              <span className="mr-auto text-badge text-fg-muted">
+                이미 {content.status} 단계입니다
+              </span>
+            ) : (
+              <span className="mr-auto text-badge font-semibold text-success">
+                {retouchedFiles.length}건 모두 짝지어졌습니다
+              </span>
+            )}
+            <Button onClick={() => setRetouchedOpen(false)}>닫기</Button>
+            <Button
+              variant="primary"
+              disabled={!canComplete}
+              onClick={() => {
+                store.updateContent(content.id, {
+                  status: "검수",
+                  statusChangedAt: TODAY,
+                  stuckDays: 0,
+                });
+                setRetouchedOpen(false);
+              }}
+            >
+              보정 완료 · 검수로 넘기기
+            </Button>
+          </>
+        }
       >
         <RetouchedUpload content={content} photos={photos} />
       </Dialog>

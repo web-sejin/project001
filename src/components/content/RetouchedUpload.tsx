@@ -85,6 +85,10 @@ export function RetouchedUpload({
       <div className="p-4">
         {retouched.length > 0 ? (
           <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Badge variant="neutral">
+              원본 <span className="tnum">{originals.length}</span>장 중{" "}
+              <span className="tnum">{matched.length}</span>장 도착
+            </Badge>
             <Badge variant="success">
               짝 지음 <span className="tnum">{matched.length}</span>
             </Badge>
