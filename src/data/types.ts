@@ -95,8 +95,13 @@ export interface Content {
   statusChangedAt: string;
   stuckDays: number;
   reshootCount: number;
-  /** 현장 모드로 촬영했는지 */
-  fieldMode: boolean;
+  /**
+   * 철수 전 확인을 거쳤는지.
+   *
+   * 지금 실무는 복귀 후 업로드다. 그러면 누락은 며칠 뒤 편집 단계에서 드러나고
+   * 그때는 이미 늦다. 이 값은 그 확인을 촬영 종료 직후로 당겼다는 표시다.
+   */
+  preDepartureCheck: boolean;
 }
 
 export type ApprovalStatus = "승인" | "반려" | "대기";

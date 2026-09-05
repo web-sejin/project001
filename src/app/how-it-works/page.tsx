@@ -102,7 +102,7 @@ const EFFECTS = [
   },
   {
     layer: "낭비 제거",
-    body: "촬영 누락을 현장에서 잡아 재촬영 자체를 없앤다. 재방문 협의와 일정 재조정이 사라진다.",
+    body: "누락을 아는 시점을 철수 전으로 당겨 재촬영 자체를 없앤다. 지금은 복귀 후 업로드라 며칠 뒤 편집 단계에서 드러난다.",
     common: false,
   },
   {
@@ -343,8 +343,8 @@ export default function HowItWorksPage() {
                 웹 시스템은 프리뷰와 썸네일만 다룹니다. DB에는 경로와 메타데이터만
                 저장합니다. 업로드도 브라우저가 presigned URL로 스토리지에 직접 올려
                 웹서버를 거치지 않습니다. 24GB를 올리는 데 걸리는 30분은 어떤 기술로도
-                줄일 수 없어서, 현장에서는 RAW+JPG 동시 저장의 JPG(총 4GB)만 먼저
-                올립니다. 이것이 현장 모드를 기술적으로 성립시키는 근거입니다.
+                줄일 수 없어서, 철수 전 확인에는 RAW+JPG 동시 저장의 JPG(총 4GB)만
+                올립니다. 이것이 철수 전 확인을 5분 안에 끝낼 수 있게 하는 근거입니다.
               </p>
             </div>
           </Panel>
@@ -461,7 +461,54 @@ export default function HowItWorksPage() {
           </Panel>
         </section>
 
-        <section className="rounded-box border border-line bg-surface p-4">
+        <section>
+          <h2 className="text-section font-semibold text-fg">8. 확인이 필요한 전제</h2>
+          <p className="mt-1 text-body text-fg-muted">
+            도입 전에 현업에 확인해야 하는 항목입니다. 여기가 틀리면 설계가 바뀝니다.
+          </p>
+          <Panel className="mt-3">
+            <ul className="divide-y divide-line text-body">
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">
+                  촬영 현장에 업로드 가능한 네트워크가 있는가
+                </span>
+                <span className="mt-px block leading-[19px] text-fg-muted">
+                  철수 전 확인은 현장에서 JPG 4GB를 올릴 수 있어야 성립합니다. 외곽·산간
+                  숙소가 많다면 안 되는 현장이 생깁니다. 그 경우 이 기능은 복귀 후
+                  검수용으로 동작하고, 그래도 편집 단계보다는 며칠 빠릅니다.
+                </span>
+              </li>
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">
+                  촬영자가 철수 전 5분을 쓸 수 있는가
+                </span>
+                <span className="mt-px block leading-[19px] text-fg-muted">
+                  하루에 여러 숙소를 도는 일정이면 현장에서 쓸 시간이 없습니다. 절차를
+                  바꾸는 일이라 촬영팀 합의가 필요합니다.
+                </span>
+              </li>
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">
+                  단계별 소요일과 재촬영 빈도의 실제 값
+                </span>
+                <span className="mt-px block leading-[19px] text-fg-muted">
+                  이 목업의 보정 4.2일, 재촬영 4회는 가정한 숫자입니다. 실제 로그를
+                  집계해야 병목이 정말 보정 구간인지 확인됩니다.
+                </span>
+              </li>
+              <li className="px-4 py-2.5">
+                <span className="font-semibold text-fg">
+                  현재 사용 중인 시스템이 있는가
+                </span>
+                <span className="mt-px block leading-[19px] text-fg-muted">
+                  있다면 갈아엎지 않고 AI 처리 계층만 붙이는 쪽이 맞습니다.
+                </span>
+              </li>
+            </ul>
+          </Panel>
+        </section>
+
+        <section className="rounded-box border border-line-strong bg-surface p-4">
           <h2 className="text-body font-semibold text-fg">이 목업의 범위</h2>
           <p className="mt-1 text-body leading-[19px] text-fg-muted">
             서버, DB, 로그인, 실제 AI API 호출은 구현하지 않았습니다. 화면에 보이는 AI

@@ -46,6 +46,7 @@ interface StoreValue {
     shootDate: string;
     photographer: string;
   }) => Content;
+  updateContent: (id: string, patch: Partial<Omit<Content, "id">>) => void;
 
   accommodationOf: (id: string) => Accommodation | undefined;
   contentOf: (id: string) => Content | undefined;
@@ -132,12 +133,21 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
         statusChangedAt: TODAY,
         stuckDays: Math.max(0, daysBetween(input.shootDate, TODAY)),
         reshootCount: 0,
-        fieldMode: false,
+        preDepartureCheck: false,
       };
       setContents((prev) => [...prev, created]);
       return created;
     },
     [contents],
+  );
+
+  const updateContent = useCallback(
+    (id: string, patch: Partial<Omit<Content, "id">>) => {
+      setContents((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+      );
+    },
+    [],
   );
 
   const value = useMemo<StoreValue>(() => {
@@ -170,6 +180,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
       saveAccommodation,
       removeAccommodation,
       addContent,
+      updateContent,
       accommodationOf,
       contentOf,
       contentsOfAccommodation: (accId) =>
@@ -190,6 +201,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     saveAccommodation,
     removeAccommodation,
     addContent,
+    updateContent,
   ]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

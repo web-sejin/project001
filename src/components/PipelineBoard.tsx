@@ -119,7 +119,9 @@ export function PipelineBoard() {
                         {content.reshootCount > 0 ? (
                           <Badge variant="danger">재촬영 {content.reshootCount}</Badge>
                         ) : null}
-                        {content.fieldMode ? <Badge variant="ai">현장</Badge> : null}
+                        {content.preDepartureCheck ? (
+                          <Badge variant="ai">철수 전 확인</Badge>
+                        ) : null}
                       </div>
                     </Link>
                   );

@@ -21,7 +21,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-24",
     stuckDays: 12,
     reshootCount: 1,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-02",
@@ -33,7 +33,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-02",
     stuckDays: 3,
     reshootCount: 0,
-    fieldMode: true,
+    preDepartureCheck: true,
   },
   {
     id: "c-03",
@@ -45,7 +45,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-04",
     stuckDays: 1,
     reshootCount: 0,
-    fieldMode: true,
+    preDepartureCheck: true,
   },
   {
     id: "c-04",
@@ -57,7 +57,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-27",
     stuckDays: 0,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-05",
@@ -69,7 +69,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-30",
     stuckDays: 0,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-06",
@@ -81,7 +81,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-28",
     stuckDays: 8,
     reshootCount: 1,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-07",
@@ -93,7 +93,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-03",
     stuckDays: 2,
     reshootCount: 0,
-    fieldMode: true,
+    preDepartureCheck: true,
   },
   {
     id: "c-08",
@@ -105,7 +105,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-29",
     stuckDays: 0,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-09",
@@ -117,7 +117,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-04",
     stuckDays: 1,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-10",
@@ -129,7 +129,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-01",
     stuckDays: 4,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-11",
@@ -141,7 +141,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-21",
     stuckDays: 0,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-12",
@@ -153,7 +153,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-01",
     stuckDays: 0,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-13",
@@ -165,7 +165,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-08-27",
     stuckDays: 9,
     reshootCount: 2,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
   {
     id: "c-14",
@@ -177,7 +177,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-03",
     stuckDays: 2,
     reshootCount: 0,
-    fieldMode: true,
+    preDepartureCheck: true,
   },
   {
     id: "c-15",
@@ -189,7 +189,7 @@ export const CONTENTS: Content[] = [
     statusChangedAt: "2026-09-02",
     stuckDays: 0,
     reshootCount: 0,
-    fieldMode: false,
+    preDepartureCheck: false,
   },
 ];
 

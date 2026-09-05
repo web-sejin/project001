@@ -23,14 +23,14 @@ export function ShootTab({
   content,
   acc,
   analysis,
-  fieldMode,
-  onFieldModeChange,
+  preDepartureCheck,
+  onPreDepartureCheckChange,
 }: {
   content: Content;
   acc: Accommodation;
   analysis: ContentAnalysis;
-  fieldMode: boolean;
-  onFieldModeChange: (next: boolean) => void;
+  preDepartureCheck: boolean;
+  onPreDepartureCheckChange: (next: boolean) => void;
 }) {
   const [excluded, setExcluded] = useState<string[]>(analysis.excludedShotLabels);
   const [extra, setExtra] = useState<ShotItem[]>([]);
@@ -48,14 +48,14 @@ export function ShootTab({
       derivedFrom: s.derivedFrom,
       isRequired: s.isRequired,
     }));
-    if (!fieldMode) return base;
+    if (!preDepartureCheck) return base;
     // 현장 모드에서는 아직 못 채운 항목이 위로 온다. 현장에서 확인할 건 그것뿐이다.
     return [...base].sort((a, b) => {
       const am = a.current >= a.minCount ? 1 : 0;
       const bm = b.current >= b.minCount ? 1 : 0;
       return am - bm;
     });
-  }, [analysis, extra, fieldMode]);
+  }, [analysis, extra, preDepartureCheck]);
 
   const active = rows.filter((r) => !excluded.includes(r.label) && r.isRequired);
   const met = active.filter((r) => r.current >= r.minCount).length;
@@ -107,15 +107,13 @@ export function ShootTab({
             }
           />
 
-          {fieldMode ? (
+          {preDepartureCheck ? (
             <div className="border-b border-line bg-ai-bg px-4 py-2.5">
-              <p className="text-body font-medium text-ai">
-                현장 모드 · 미충족 항목이 위로 정렬됩니다
+              <p className="text-body font-semibold text-ai">
+                철수 전 확인 · 미충족 항목이 위로 정렬됩니다
               </p>
               <p className="mt-1 text-badge leading-[16px] text-fg-muted">
-                촬영 중 프리뷰(JPG)만 먼저 올려 누락을 현장에서 확인합니다. 원본(RAW)은
-                복귀 후 업로드됩니다. 편집 단계에서 누락을 발견하면 촬영팀은 이미
-                철수한 뒤입니다.
+                아직 못 채운 컷만 위에 모아 둡니다. 현장에서 볼 건 그것뿐입니다.
               </p>
             </div>
           ) : null}
@@ -128,7 +126,7 @@ export function ShootTab({
                 <li
                   key={row.key}
                   className={`flex items-center gap-3 px-4 ${
-                    fieldMode ? "py-3" : "py-2"
+                    preDepartureCheck ? "py-3" : "py-2"
                   } ${isExcluded ? "bg-surface/60" : ""}`}
                 >
                   <span
@@ -258,40 +256,65 @@ export function ShootTab({
           </dl>
         </Panel>
 
-        <Panel className="border-ai/25">
-          <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+        <Panel>
+          <div className="flex items-center justify-between gap-3 border-b border-line-strong bg-surface px-4 py-2.5">
             <div>
-              <h2 className="text-section font-semibold text-fg">현장 모드</h2>
-              <p className="mt-0.5 text-badge text-fg-subtle">
-                촬영 중 누락을 현장에서 잡는다
+              <h2 className="text-section font-semibold text-fg">철수 전 확인</h2>
+              <p className="mt-0.5 text-badge text-fg-muted">
+                누락을 아는 시점을 5분 앞으로
               </p>
             </div>
             <Toggle
-              id="field-mode"
-              label="현장 모드"
-              checked={fieldMode}
-              onChange={onFieldModeChange}
+              id="pre-departure-check"
+              label="철수 전 확인"
+              checked={preDepartureCheck}
+              onChange={onPreDepartureCheckChange}
             />
           </div>
-          <div className="space-y-2 p-4">
-            <p className="text-body leading-[19px] text-fg-muted">
-              프리뷰(JPG)만 먼저 업로드해 라벨링과 누락 탐지를 현장에서 돌립니다. 원본
-              RAW는 복귀 후 유선으로 올립니다.
-            </p>
-            <div className="rounded-box bg-surface p-2.5">
+
+          <div className="space-y-3 p-4">
+            <ol className="space-y-1.5 text-body text-fg-muted">
+              <Step n={1}>촬영이 끝나면 카드에서 JPG만 복사합니다 (약 4GB)</Step>
+              <Step n={2}>업로드하면 라벨링과 누락 대조가 5분 안에 끝납니다</Step>
+              <Step n={3}>빠진 컷만 다시 찍고 철수합니다</Step>
+            </ol>
+
+            <div className="rounded-box border border-line bg-surface p-2.5">
               <p className="text-badge leading-[16px] text-fg-muted">
-                같은 AI 기능이라도 사후 검수용이면{" "}
-                <span className="text-fg">재촬영을 빨리 아는 것</span>이고, 현장용이면{" "}
-                <span className="text-fg">재촬영이 아예 안 생기는 것</span>입니다.
+                지금은 복귀 후에 올리고, 누락은 며칠 뒤 편집 단계에서 드러납니다. 그때는
+                촬영팀이 철수한 뒤라 재방문 협의부터 다시 해야 합니다. 바꾸는 건 그
+                <span className="text-fg"> 확인 시점 하나</span>입니다.
               </p>
             </div>
-            <div className="flex items-center gap-2 pt-1">
+
+            {/* 검증 안 된 전제는 전제라고 적는다 */}
+            <div className="rounded-box border border-warn/30 bg-[#FBF0E2] p-2.5">
+              <p className="text-badge font-semibold text-warn">확인이 필요한 전제</p>
+              <p className="mt-1 text-badge leading-[16px] text-fg-muted">
+                현장에 업로드 가능한 네트워크가 있어야 하고, 촬영자가 철수 전 5분을 쓸
+                수 있어야 합니다. 두 조건이 안 되면 이 기능은 복귀 후 검수용으로
+                동작합니다. 그래도 편집 단계보다는 며칠 빠릅니다.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
               <AiBadge label="라벨링 · 누락 탐지 (모의)" />
             </div>
           </div>
         </Panel>
       </div>
     </div>
+  );
+}
+
+function Step({ n, children }: { n: number; children: ReactNode }) {
+  return (
+    <li className="flex gap-2">
+      <span className="tnum mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-ai text-[10px] leading-none font-semibold text-white">
+        {n}
+      </span>
+      <span className="leading-[19px]">{children}</span>
+    </li>
   );
 }
 

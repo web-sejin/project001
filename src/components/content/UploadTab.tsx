@@ -1,25 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AiBadge, Badge } from "@/components/ui/Badge";
 import { InfoTip } from "@/components/ui/InfoTip";
 import { Meter } from "@/components/ui/Meter";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
 import { Toggle } from "@/components/ui/Toggle";
+import { Button } from "@/components/ui/Button";
 import { TIER_LABEL, type ContentAnalysis } from "@/data/analysis";
+import { TODAY } from "@/data/contents";
+import { useStore } from "@/store/MockStore";
 import type { Content, Photo } from "@/data/types";
 
 export function UploadTab({
   content,
   analysis,
   photos,
-  fieldMode,
+  preDepartureCheck,
 }: {
   content: Content;
   analysis: ContentAnalysis;
   photos: Photo[];
-  fieldMode: boolean;
+  preDepartureCheck: boolean;
 }) {
   const [dismissed, setDismissed] = useState<string[]>(analysis.dismissedMissing);
   const [recommendedOnly, setRecommendedOnly] = useState(true);
@@ -43,12 +46,7 @@ export function UploadTab({
 
   if (content.status === "촬영예정") {
     return (
-      <Panel>
-        <div className="p-4 text-body text-fg-muted">
-          아직 촬영 전입니다. 촬영일({content.shootDate}) 이후 프리뷰가 업로드되면 AI
-          라벨링과 누락 탐지가 실행됩니다.
-        </div>
-      </Panel>
+      <PreviewUpload content={content} preDepartureCheck={preDepartureCheck} />
     );
   }
 
@@ -67,8 +65,8 @@ export function UploadTab({
             )
           }
           description={
-            fieldMode
-              ? "현장 모드 · 프리뷰 업로드 즉시 체크리스트와 대조합니다"
+            preDepartureCheck
+              ? "철수 전 확인 · 업로드 즉시 체크리스트와 대조합니다"
               : "업로드 완료 후 체크리스트와 대조한 결과입니다"
           }
           right={
@@ -300,6 +298,162 @@ export function UploadTab({
             목업 렌더링 범위: 추천 컷 48장 + 제외 컷 샘플 24장. 실제 대상은{" "}
             <span className="tnum">{analysis.total}</span>장이며 위 집계 숫자가 전체
             기준입니다.
+          </p>
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+/**
+ * 프리뷰 업로드 진입점.
+ *
+ * 실제 파일 전송은 구현하지 않는다. 서버도 스토리지도 없다.
+ * 다만 사진이 시스템에 들어오는 자리가 화면에 없으면 흐름이 끊긴다.
+ * 파일을 고르면 그 장수를 그대로 총량으로 잡고, 업로드 이후의 상태 전이와
+ * AI 분석 결과가 나타나는 데까지를 재현한다.
+ */
+function PreviewUpload({
+  content,
+  preDepartureCheck,
+}: {
+  content: Content;
+  preDepartureCheck: boolean;
+}) {
+  const store = useStore();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [phase, setPhase] = useState<"idle" | "uploading" | "analyzing">("idle");
+  const [done, setDone] = useState(0);
+
+  const total = picked ?? 800;
+
+  useEffect(() => {
+    if (phase !== "uploading" || done >= total) return;
+    const t = setTimeout(() => {
+      const next = Math.min(total, done + Math.ceil(total / 18));
+      setDone(next);
+      if (next >= total) setPhase("analyzing");
+    }, 90);
+    return () => clearTimeout(t);
+  }, [phase, done, total]);
+
+  useEffect(() => {
+    if (phase !== "analyzing") return;
+    const t = setTimeout(() => {
+      store.updateContent(content.id, {
+        status: "촬영완료",
+        statusChangedAt: TODAY,
+        stuckDays: 0,
+        preDepartureCheck,
+      });
+    }, 1400);
+    return () => clearTimeout(t);
+  }, [phase, store, content.id, preDepartureCheck]);
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <Panel>
+        <PanelHeader
+          title="프리뷰 업로드"
+          description="촬영이 끝나면 카드에서 JPG만 복사해 올립니다. 원본 RAW는 복귀 후 유선으로 올립니다."
+        />
+
+        <div className="p-4">
+          {phase === "idle" ? (
+            <>
+              <div className="rounded-box border border-dashed border-line-strong bg-surface px-4 py-8 text-center">
+                <p className="text-body font-semibold text-fg">
+                  파일을 끌어다 놓거나 선택하세요
+                </p>
+                <p className="mt-1 text-badge text-fg-muted">
+                  JPG · 한 건당 보통 700~900장 (약 4GB)
+                </p>
+                <input
+                  ref={inputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setPicked(e.target.files?.length ?? null)}
+                />
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                  <Button onClick={() => inputRef.current?.click()}>
+                    파일 선택
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setDone(0);
+                      setPhase("uploading");
+                    }}
+                  >
+                    {picked
+                      ? `${picked}장 업로드 시작`
+                      : "샘플 800장으로 업로드 시뮬레이션"}
+                  </Button>
+                </div>
+                {picked ? (
+                  <p className="mt-2 text-badge text-fg-muted">
+                    <span className="tnum">{picked}</span>장 선택됨
+                  </p>
+                ) : null}
+              </div>
+
+              <p className="mt-3 text-badge leading-[16px] text-fg-muted">
+                목업이라 파일이 실제로 전송되지는 않습니다. 고른 장수만 읽어서 이후
+                흐름(업로드 → 상태 전환 → AI 라벨링·누락 탐지)을 재현합니다. 실제
+                시스템에서는 브라우저가 presigned URL로 스토리지에 직접 올리고, 파일이
+                웹서버를 거치지 않습니다.
+              </p>
+            </>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-body">
+                <span className="text-fg-muted">
+                  {phase === "uploading" ? "업로드 중" : "AI 분석 중"}
+                </span>
+                <span className="tnum font-semibold text-fg">
+                  {done} / {total}
+                </span>
+              </div>
+              <Meter value={done} max={total} tone="ai" />
+              <p className="text-badge leading-[16px] text-fg-muted">
+                {phase === "uploading"
+                  ? "동시 4~6개로 나눠 올립니다. 중간에 끊기면 그 파일만 재개합니다."
+                  : "결함 필터 → 중복 제거 → 라벨링 순으로 돌립니다. 곧 결과가 나타납니다."}
+              </p>
+            </div>
+          )}
+        </div>
+      </Panel>
+
+      <Panel>
+        <PanelHeader title="업로드 후 일어나는 일" />
+        <ol className="divide-y divide-line text-body">
+          <li className="px-4 py-2.5">
+            <span className="font-semibold text-fg">상태가 촬영완료로 바뀝니다</span>
+            <span className="mt-px block text-badge text-fg-muted">
+              현황판 보드에서 칼럼이 이동합니다
+            </span>
+          </li>
+          <li className="px-4 py-2.5">
+            <span className="font-semibold text-fg">AI 셀렉이 돌아갑니다</span>
+            <span className="mt-px block text-badge text-fg-muted">
+              흔들림·중복·노출 오류를 걸러 대표 컷을 추립니다
+            </span>
+          </li>
+          <li className="px-4 py-2.5">
+            <span className="font-semibold text-fg">체크리스트와 대조합니다</span>
+            <span className="mt-px block text-badge text-fg-muted">
+              빠진 공간이 있으면 이 화면 상단에 경고가 뜹니다
+            </span>
+          </li>
+        </ol>
+        <div className="border-t border-line bg-surface px-4 py-2.5">
+          <p className="text-badge leading-[16px] text-fg-muted">
+            촬영일은 {content.shootDate}입니다. 철수 전에 이 업로드를 돌리면 빠진 컷을
+            그 자리에서 다시 찍을 수 있습니다.
           </p>
         </div>
       </Panel>

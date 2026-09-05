@@ -45,7 +45,9 @@ export function ContentDetail({
   initialTab: TabKey;
 }) {
   const [tab, setTab] = useState<TabKey>(initialTab);
-  const [fieldMode, setFieldMode] = useState(content.fieldMode);
+  const [preDepartureCheck, setPreDepartureCheck] = useState(
+    content.preDepartureCheck,
+  );
 
   const approved = photos.filter(
     (p) => p.selected && p.approvalStatus === "승인",
@@ -75,7 +77,7 @@ export function ContentDetail({
           {content.reshootCount > 0 ? (
             <Badge variant="danger">재촬영 {content.reshootCount}회</Badge>
           ) : null}
-          {fieldMode ? <Badge variant="ai">현장 모드</Badge> : null}
+          {preDepartureCheck ? <Badge variant="ai">철수 전 확인</Badge> : null}
         </div>
 
         <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-body text-fg-muted">
@@ -123,8 +125,8 @@ export function ContentDetail({
             content={content}
             acc={acc}
             analysis={analysis}
-            fieldMode={fieldMode}
-            onFieldModeChange={setFieldMode}
+            preDepartureCheck={preDepartureCheck}
+            onPreDepartureCheckChange={setPreDepartureCheck}
           />
         ) : null}
         {tab === "upload" ? (
@@ -132,7 +134,7 @@ export function ContentDetail({
             content={content}
             analysis={analysis}
             photos={photos}
-            fieldMode={fieldMode}
+            preDepartureCheck={preDepartureCheck}
           />
         ) : null}
         {tab === "retouch" ? (
