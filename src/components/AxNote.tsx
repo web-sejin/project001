@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { TIER_LABEL, TIER_NOTE, axIdea, type Tier } from "@/data/ax";
+import { TIER_LABEL, axIdea, type Tier } from "@/data/ax";
 import { useStore } from "@/store/MockStore";
 
 /** 수단 층위 배지 */
@@ -67,7 +67,9 @@ function Bubble({
       >
         <span className="flex flex-wrap items-center gap-1.5">
           <span className="text-body font-semibold text-fg">{idea.title}</span>
-          <TierBadge tier={idea.tier} />
+          {idea.tiers.map((t) => (
+            <TierBadge key={t} tier={t} />
+          ))}
         </span>
         <span className="mt-1.5 block text-badge leading-[16px] text-fg-muted">
           {children ?? idea.note}
@@ -77,8 +79,8 @@ function Bubble({
           <br />
           <span className="font-semibold text-fg-muted">바뀌면</span> {idea.toBe}
         </span>
-        <span className="mt-1.5 block text-badge text-fg-subtle">
-          {TIER_NOTE[idea.tier]} ·{" "}
+        <span className="mt-1.5 block text-badge leading-[16px] text-fg-subtle">
+          {idea.why} ·{" "}
           <Link href="/ax" className="underline underline-offset-2">
             전체 아이디어
           </Link>

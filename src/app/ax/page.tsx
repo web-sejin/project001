@@ -45,7 +45,7 @@ const STAGE_TITLE: Record<string, string> = {
 
 export default function AxPage() {
   const maxCount = FUNNEL[0].count;
-  const notAi = AX_IDEAS.filter((i) => i.tier === "AI 아님").length;
+  const notAi = AX_IDEAS.filter((i) => i.tiers.every((t) => t === "AI 아님")).length;
 
   return (
     <div>
@@ -96,7 +96,9 @@ export default function AxPage() {
                           <h3 className="text-body font-semibold text-fg">
                             {idea.title}
                           </h3>
-                          <TierBadge tier={idea.tier} />
+                          {idea.tiers.map((t) => (
+                            <TierBadge key={t} tier={t} />
+                          ))}
                         </div>
 
                         <dl className="mt-2 space-y-1.5 text-body">
