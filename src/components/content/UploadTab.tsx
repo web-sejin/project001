@@ -79,9 +79,10 @@ export function UploadTab({
               <>
                 <AiBadge />
                 <InfoTip align="right">
-                  분류만 LLM 비전이 합니다. 대조는 라벨별로 장수를 세서 체크리스트의
-                  필요 수량과 견주는 것뿐입니다. 확인해 주는 건 그 장수까지이고, 객실
-                  여러 개에 고르게 퍼졌는지는 판정하지 못합니다.
+                  사진을 보고 어떤 공간인지 이름을 붙이는 것만 큰 AI가 합니다
+                  (Claude·GPT·Gemini). 그다음은 이름별로 장수를 세서 체크리스트의 필요
+                  수량과 견주는 것뿐입니다. 확인해 주는 건 그 장수까지이고, 객실 여러
+                  개에 고르게 퍼졌는지는 판정하지 못합니다.
                 </InfoTip>
               </>
             }
@@ -124,7 +125,7 @@ export function UploadTab({
                           <Badge variant="warn">확신도 낮음 · 확인 필요</Badge>
                         )}
                       </div>
-                      <p className="mt-1 text-badge leading-[16px] text-fg-muted">
+                      <p className="mt-1 text-badge leading-[18px] text-fg-muted">
                         {m.reason}
                       </p>
                     </div>

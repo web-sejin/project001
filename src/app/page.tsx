@@ -126,7 +126,7 @@ export default function DashboardPage() {
               })}
             </div>
             <div className="border-t border-line bg-surface px-4 py-2.5">
-              <p className="text-badge leading-[16px] text-fg-muted">
+              <p className="text-badge leading-[18px] text-fg-muted">
                 보정 구간이 나머지 세 단계를 합친 것보다 깁니다. 작업 시간보다 반려
                 사유가 흩어져 생기는 왕복 지연이 큽니다.
               </p>

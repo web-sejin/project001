@@ -95,7 +95,7 @@ export function ToneChart({ photos }: { photos: Photo[] }) {
       </div>
 
       {spread > 300 ? (
-        <p className="mt-2 text-badge leading-[16px] text-fg-muted">
+        <p className="mt-2 text-badge leading-[18px] text-fg-muted">
           두 리터처의 톤 기준이 다릅니다. 발행 세트에 섞이면 상세페이지에서 바로 티가
           납니다.
         </p>

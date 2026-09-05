@@ -212,9 +212,9 @@ export function UploadVerify({ content }: { content: Content }) {
                   {axMode ? <AxTag id="ax-02" align="left" /> : null}
                   {axMode ? (
                   <InfoTip>
-                    실제 시스템은 이 자리에서 LLM 비전으로 이미지를 분류합니다. 목업에는
-                    모델이 없어 파일명만 봅니다. 못 알아보면 미분류로 두고 직접 고르게
-                    합니다.
+                    실제 시스템은 이 자리에서 사진을 큰 AI에 보내 어떤 공간인지 이름을
+                    붙입니다(Claude·GPT·Gemini). 이 목업에는 AI를 붙이지 않아 파일명만
+                    보고 짐작합니다. 못 알아보면 미분류로 두고 직접 고르게 합니다.
                   </InfoTip>
                   ) : null}
                   {axMode && unclassified > 0 ? (
@@ -357,17 +357,17 @@ export function UploadVerify({ content }: { content: Content }) {
                 <SelectRow
                   reason="흔들림"
                   count={excludedBy("흔들림")}
-                  method="라플라시안 커널로 엣지 선명도를 재고, 같은 촬영 건 안에서 중앙값의 35% 아래면 제외합니다. 절대값 기준은 피사체와 렌즈에 따라 편차가 커서 상대 비교가 안정적입니다."
+                  method="사진의 경계선이 얼마나 또렷한지 계산합니다. 흔들린 사진은 경계가 뭉개져 값이 낮게 나옵니다. 몇 점 미만이면 흐리다고 딱 잘라 정하기 어려워서, 이번에 올린 사진들의 가운데 값을 기준으로 유난히 낮은 것만 걸러냅니다. 실제 시스템에서는 OpenCV 같은 이미지 처리 라이브러리를 씁니다."
                 />
                 <SelectRow
                   reason="노출 오류"
                   count={excludedBy("노출 오류")}
-                  method="히스토그램에서 하이라이트가 날아갔거나 암부가 뭉갠 픽셀 비율을 셉니다."
+                  method="너무 밝아 하얗게 날아간 부분과 너무 어두워 까맣게 뭉갠 부분이 사진에서 얼마나 되는지 셉니다. 기준을 넘으면 제외합니다."
                 />
                 <SelectRow
                   reason="중복 · 유사 컷"
                   count={excludedBy("중복")}
-                  method="지각 해시(dHash) 64비트의 해밍 거리가 8 이하면 같은 장면으로 보고, 그룹에서 가장 선명한 컷만 남깁니다. 실제 시스템은 CLIP 계열 임베딩을 쓰는 편이 정확하지만 원리는 같고 어느 쪽도 LLM을 부르지 않습니다."
+                  method="사진을 아주 작게 줄여 지문 같은 값을 만들고, 그 값이 거의 같으면 같은 장면으로 봅니다. 묶인 것 중 가장 또렷한 한 장만 남깁니다. 실제 시스템에서는 imagehash나 CLIP 같은 라이브러리를 쓰면 더 정확하고, 어느 쪽이든 큰 AI를 부르지 않습니다."
                 />
                 <li className="flex items-center gap-2 bg-ai-bg px-4 py-2">
                   <span className="min-w-0 flex-1 text-body font-semibold text-fg">
@@ -380,7 +380,7 @@ export function UploadVerify({ content }: { content: Content }) {
                 </li>
               </ul>
               <div className="border-t border-line bg-surface px-4 py-2.5">
-                <p className="text-badge leading-[16px] text-fg-muted">
+                <p className="text-badge leading-[18px] text-fg-muted">
                   {analyzing ? (
                     "측정 중…"
                   ) : (
@@ -388,8 +388,8 @@ export function UploadVerify({ content }: { content: Content }) {
                       <span className="tnum font-semibold text-fg">{files.length}</span>
                       장 측정에{" "}
                       <span className="tnum font-semibold text-fg">{elapsed}ms</span>{" "}
-                      걸렸습니다. 브라우저에서 잰 실제 시간입니다. 이 단계는 모델이
-                      없어도 되고, 그래서 LLM에 넘길 장수를 먼저 줄입니다.
+                      걸렸습니다. 브라우저에서 잰 실제 시간입니다. 이 단계는 AI 없이
+                      계산만으로 되고, 그래서 큰 AI에 넘길 장수를 먼저 줄입니다.
                     </>
                   )}
                 </p>
@@ -430,7 +430,7 @@ export function UploadVerify({ content }: { content: Content }) {
                     <p className="text-body font-semibold text-danger">
                       누락 {missing.length}건
                     </p>
-                    <p className="mt-1 text-badge leading-[16px] text-fg-muted">
+                    <p className="mt-1 text-badge leading-[18px] text-fg-muted">
                       {missing.map((m) => m.label).join(", ")} — 편집에 들어가기 전에
                       알 수 있습니다.
                     </p>
@@ -498,13 +498,13 @@ export function UploadVerify({ content }: { content: Content }) {
                       >
                         촬영 완료로 처리
                       </Button>
-                      <p className="mt-2 text-badge leading-[16px] text-fg-subtle">
+                      <p className="mt-2 text-badge leading-[18px] text-fg-subtle">
                         누락이 있어도 처리할 수 있습니다. 시스템은 알려줄 뿐 막지
                         않습니다.
                       </p>
                     </>
                   ) : (
-                    <p className="text-badge leading-[16px] text-fg-muted">
+                    <p className="text-badge leading-[18px] text-fg-muted">
                       직접 올린 사진 <span className="tnum">{files.length}</span>장을
                       기준으로 계산한 결과입니다. 비우면 샘플 데이터 화면으로 돌아갑니다.
                     </p>

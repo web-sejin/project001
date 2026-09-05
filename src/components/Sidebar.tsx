@@ -54,7 +54,7 @@ export function Sidebar() {
 
         <div className="border-t border-white/15 p-3">
           <p className="text-badge font-semibold text-white">더미 데이터 기반 목업</p>
-          <p className="mt-1 text-badge leading-[15px] text-nav-muted">
+          <p className="mt-1 text-badge leading-[17px] text-nav-muted">
             등록·수정은 화면에서 반영되지만 서버가 없어 새로고침하면 초기값으로
             돌아갑니다.
           </p>
@@ -141,7 +141,7 @@ function AxToggle({
           </p>
         </>
       ) : (
-        <p className="mt-2 text-badge leading-[15px] text-nav-muted">
+        <p className="mt-2 text-badge leading-[17px] text-nav-muted">
           지금 쓰고 있을 법한 관리 화면입니다. 켜면 어디에 AI·자동화를 넣을지
           보입니다.
         </p>

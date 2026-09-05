@@ -83,7 +83,7 @@ export function ScheduleForm({
       </div>
 
       {acc ? (
-        <p className="rounded-box bg-surface px-3 py-2 text-badge leading-[16px] text-fg-muted">
+        <p className="rounded-box bg-surface px-3 py-2 text-badge leading-[18px] text-fg-muted">
           {acc.name}의 시설 정보에서 필수 컷{" "}
           <span className="tnum font-semibold text-fg">{shotList.length}</span>항목 (
           <span className="tnum font-semibold text-fg">{requiredCuts}</span>컷)이

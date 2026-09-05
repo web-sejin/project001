@@ -102,7 +102,7 @@ export function AssignPanel({ content }: { content: Content }) {
               );
             })}
           </div>
-          <p className="mt-1 text-badge leading-[16px] text-fg-subtle">
+          <p className="mt-1 text-badge leading-[18px] text-fg-subtle">
             진행 중 건수는 상태가 보정중·검수인 건을 센 값입니다. 한 명에게 몰리는 걸
             막으려고 옆에 붙였습니다.
           </p>
@@ -136,7 +136,7 @@ export function AssignPanel({ content }: { content: Content }) {
       </div>
 
       <div className="border-t border-line bg-surface px-4 py-2.5">
-        <p className="text-badge leading-[16px] text-fg-muted">
+        <p className="text-badge leading-[18px] text-fg-muted">
           보정 작업 자체는 라이트룸·포토샵에서 사람이 합니다. 시스템은 배정과 전달,
           결과 수령, 검수 이력만 관리합니다.
         </p>

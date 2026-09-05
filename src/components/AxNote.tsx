@@ -73,7 +73,7 @@ function Bubble({
   return (
     <span className="group/ax relative inline-flex">
       <span
-        className={`flex cursor-help items-center gap-1 rounded-full border px-1.5 py-[1px] text-[10px] leading-[14px] font-semibold text-white ${
+        className={`flex cursor-help items-center gap-1 rounded-full border px-1.5 py-[1px] text-[11px] leading-[15px] font-semibold text-white ${
           isAi
             ? "border-ai bg-ai shadow-[0_1px_3px_rgba(105,64,165,0.35)]"
             : "border-auto bg-auto shadow-[0_1px_3px_rgba(44,92,168,0.35)]"
@@ -96,7 +96,7 @@ function Bubble({
               : "border-auto-line bg-auto-bg text-auto"
           }`}
         >
-          {isAi ? "AI를 씁니다" : "자동화 · AI 아님"}
+          {isAi ? "AI를 씁니다" : "자동화 (AI 아님)"}
         </span>
 
         <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -106,17 +106,17 @@ function Bubble({
           ))}
         </span>
 
-        <span className="mt-1.5 block text-badge leading-[16px] text-fg-muted">
+        <span className="mt-1.5 block text-badge leading-[18px] text-fg-muted">
           {children ?? idea.note}
         </span>
 
-        <span className="mt-2 block border-t border-line pt-1.5 text-badge leading-[16px] text-fg-subtle">
+        <span className="mt-2 block border-t border-line pt-1.5 text-badge leading-[18px] text-fg-subtle">
           <span className="font-semibold text-fg-muted">지금</span> {idea.asIs}
           <br />
           <span className="font-semibold text-fg-muted">개선 후</span> {idea.toBe}
         </span>
 
-        <span className="mt-1.5 block text-badge leading-[16px] text-fg-subtle">
+        <span className="mt-1.5 block text-badge leading-[18px] text-fg-subtle">
           {idea.why}
         </span>
       </span>

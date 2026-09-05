@@ -22,7 +22,7 @@ export function InfoTip({
       </button>
       <span
         role="tooltip"
-        className={`pointer-events-none invisible absolute top-full z-40 mt-1.5 w-64 rounded-box border border-line-strong bg-canvas p-2.5 text-badge leading-[15px] font-normal text-fg-muted opacity-0 shadow-[0_4px_12px_rgba(15,15,15,0.12)] transition-opacity duration-100 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 ${
+        className={`pointer-events-none invisible absolute top-full z-40 mt-1.5 w-64 rounded-box border border-line-strong bg-canvas p-2.5 text-badge leading-[17px] font-normal text-fg-muted opacity-0 shadow-[0_4px_12px_rgba(15,15,15,0.12)] transition-opacity duration-100 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 ${
           align === "right" ? "right-0" : "left-0"
         }`}
       >

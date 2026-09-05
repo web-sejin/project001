@@ -60,7 +60,7 @@ export default function AxPage() {
             <h2 className="text-section font-semibold text-fg">
               관리 화면에는 AI를 넣지 않았습니다
             </h2>
-            <p className="mt-1.5 text-body leading-[19px] text-fg-muted">
+            <p className="mt-1.5 text-body leading-[21px] text-fg-muted">
               보드, 캘린더, 상태 배지, 정체 일수, 발행 링크 기록은 전부 쿼리와 조건
               분기입니다. 여기에 AI를 붙이면 억지입니다. AI는{" "}
               <span className="font-semibold text-fg">
@@ -74,7 +74,7 @@ export default function AxPage() {
 
         <section>
           <h2 className="text-section font-semibold text-fg">수단 층위 정의</h2>
-          <p className="mt-1 text-body leading-[19px] text-fg-muted">
+          <p className="mt-1 text-body leading-[21px] text-fg-muted">
             &ldquo;AI로 처리합니다&rdquo;가 실제로는 서로 다른 네 가지를 가리킵니다.
             비용도 운영 방식도 다르므로 구분해서 씁니다.
           </p>
@@ -96,13 +96,13 @@ export default function AxPage() {
                         <td className="px-2.5 py-2">
                           <TierBadge tier={tier} />
                         </td>
-                        <td className="px-2.5 py-2 leading-[19px] text-fg">
+                        <td className="px-2.5 py-2 leading-[21px] text-fg">
                           {TIER_DEF[tier].what}
                         </td>
-                        <td className="px-2.5 py-2 leading-[19px] text-fg-muted">
+                        <td className="px-2.5 py-2 leading-[21px] text-fg-muted">
                           {TIER_DEF[tier].tools}
                         </td>
-                        <td className="px-2.5 py-2 leading-[19px] text-fg-muted">
+                        <td className="px-2.5 py-2 leading-[21px] text-fg-muted">
                           {TIER_DEF[tier].cost}
                         </td>
                       </tr>
@@ -112,13 +112,13 @@ export default function AxPage() {
               </table>
             </div>
             <div className="border-t border-line bg-surface px-4 py-2.5">
-              <p className="flex flex-wrap items-center gap-2 text-badge leading-[16px] text-fg-muted">
+              <p className="flex flex-wrap items-center gap-2 text-badge leading-[18px] text-fg-muted">
                 <span className="inline-flex items-center gap-1 rounded-box border border-ai-line bg-ai-bg px-1.5 py-0.5 font-semibold text-ai">
                   AI를 씁니다
                 </span>
                 LLM · LLM 비전 · 전용 모델
                 <span className="inline-flex items-center gap-1 rounded-box border border-auto-line bg-auto-bg px-1.5 py-0.5 font-semibold text-auto">
-                  자동화 · AI 아님
+                  자동화 (AI 아님)
                 </span>
                 순수 연산 · 규칙
               </p>
@@ -158,19 +158,19 @@ export default function AxPage() {
                         <dl className="mt-2 space-y-1.5 text-body">
                           <div className="flex gap-2">
                             <dt className="w-14 shrink-0 text-fg-subtle">지금</dt>
-                            <dd className="min-w-0 flex-1 leading-[19px] text-fg-muted">
+                            <dd className="min-w-0 flex-1 leading-[21px] text-fg-muted">
                               {idea.asIs}
                             </dd>
                           </div>
                           <div className="flex gap-2">
                             <dt className="w-14 shrink-0 text-fg-subtle">개선 후</dt>
-                            <dd className="min-w-0 flex-1 leading-[19px] text-fg">
+                            <dd className="min-w-0 flex-1 leading-[21px] text-fg">
                               {idea.toBe}
                             </dd>
                           </div>
                           <div className="flex gap-2">
                             <dt className="w-14 shrink-0 text-fg-subtle">근거</dt>
-                            <dd className="min-w-0 flex-1 leading-[19px] text-fg-muted">
+                            <dd className="min-w-0 flex-1 leading-[21px] text-fg-muted">
                               {idea.why}
                             </dd>
                           </div>
@@ -186,7 +186,7 @@ export default function AxPage() {
 
         <section>
           <h2 className="text-section font-semibold text-fg">처리 순서가 비용입니다</h2>
-          <p className="mt-1 text-body leading-[19px] text-fg-muted">
+          <p className="mt-1 text-body leading-[21px] text-fg-muted">
             800장을 전부 LLM에 던지면 비용과 시간이 몇 배가 됩니다. 앞단에서 싼 방법으로
             걸러내고, 의미 판단이 필요한 것만 넘깁니다.
           </p>
@@ -219,7 +219,7 @@ export default function AxPage() {
 
             <div className="border-t border-line bg-surface p-4">
               <h3 className="text-body font-semibold text-fg">한 건당 실제 비용</h3>
-              <p className="mt-1 text-badge leading-[16px] text-fg-muted">
+              <p className="mt-1 text-badge leading-[18px] text-fg-muted">
                 중복 제거 후 남은 346장을 긴 변 768px로 줄여 분류할 때입니다. 라벨링은
                 실시간일 이유가 없어 배치로 돌리면 절반입니다. 반복되는 분류 기준은
                 프롬프트 캐싱으로 다시 줄어듭니다.
@@ -253,7 +253,7 @@ export default function AxPage() {
                   </tr>
                 </tbody>
               </table>
-              <p className="mt-2 text-badge leading-[16px] text-fg-subtle">
+              <p className="mt-2 text-badge leading-[18px] text-fg-subtle">
                 한 건당 300~600원, 월 30건이면 만 원 안팎입니다. 이미지 토큰은 해상도에
                 비례하므로 실제 값은 측정이 필요하고, 위 숫자는 자릿수 감각용입니다.
               </p>
@@ -263,7 +263,7 @@ export default function AxPage() {
 
         <section>
           <h2 className="text-section font-semibold text-fg">AI가 못 하는 것</h2>
-          <p className="mt-1 text-body leading-[19px] text-fg-muted">
+          <p className="mt-1 text-body leading-[21px] text-fg-muted">
             할 수 있는 것만 적으면 못 하는 게 뭔지 안 보입니다. 판정할 수 없는 걸
             체크리스트에 넣으면 충족 여부가 거짓이 됩니다.
           </p>
@@ -274,7 +274,7 @@ export default function AxPage() {
                   <h3 className="font-semibold text-fg">객실 등급 · 호수 구분</h3>
                   <Badge variant="danger">판정 불가</Badge>
                 </div>
-                <p className="mt-1 leading-[19px] text-fg-muted">
+                <p className="mt-1 leading-[21px] text-fg-muted">
                   스탠다드룸인지 디럭스룸인지는 그 숙소가 정한 상품명이지 시각적
                   속성이 아닙니다. 같은 숙소의 객실 두 장을 놓고 어느 쪽이 몇 번인지
                   가릴 근거가 이미지에 없습니다. 그래서 체크리스트를{" "}
@@ -283,7 +283,7 @@ export default function AxPage() {
                   </span>{" "}
                   로 합산해서 관리합니다.
                 </p>
-                <p className="mt-1.5 leading-[19px] text-fg-muted">
+                <p className="mt-1.5 leading-[21px] text-fg-muted">
                   확인해 주는 것은 &ldquo;객실로 분류된 컷이 10장 있다&rdquo;까지이고,
                   그 10장이 두 객실에 고르게 퍼졌는지는 판정하지 못합니다. 그건
                   촬영자가 챙겨야 합니다.
@@ -297,15 +297,15 @@ export default function AxPage() {
           <h2 className="text-section font-semibold text-fg">도입 전 확인할 것</h2>
           <Panel className="mt-3">
             <ul className="divide-y divide-line text-body">
-              <li className="px-4 py-2.5 leading-[19px] text-fg-muted">
+              <li className="px-4 py-2.5 leading-[21px] text-fg-muted">
                 이 목업의 보정 4.2일과 재촬영 4회는 가정한 숫자입니다. 실제 로그를
                 집계해야 병목이 정말 보정 구간인지 확인됩니다.
               </li>
-              <li className="px-4 py-2.5 leading-[19px] text-fg-muted">
+              <li className="px-4 py-2.5 leading-[21px] text-fg-muted">
                 이 목업은 촬영을 마치고 복귀한 뒤 사무실에서 업로드한다고 가정했습니다.
                 현장에서 바로 올릴 수 있는 조건이라면 발견 시점을 더 당길 수 있습니다.
               </li>
-              <li className="px-4 py-2.5 leading-[19px] text-fg-muted">
+              <li className="px-4 py-2.5 leading-[21px] text-fg-muted">
                 이미 쓰는 시스템이 있다면 갈아엎지 않고 AI 처리 계층만 붙이는 쪽이
                 맞습니다.
               </li>
@@ -315,7 +315,7 @@ export default function AxPage() {
 
         <section className="rounded-box border border-line-strong bg-surface p-4">
           <h2 className="text-body font-semibold text-fg">이 목업의 범위</h2>
-          <p className="mt-1 text-body leading-[19px] text-fg-muted">
+          <p className="mt-1 text-body leading-[21px] text-fg-muted">
             서버, DB, 로그인, 실제 AI 호출은 구현하지 않았습니다. 화면의 AI 결과는 위에
             적은 방식이 내놓을 출력의 형태를 더미 데이터로 재현한 것이며,{" "}
             <Badge variant="ai">AI 결과 (모의)</Badge> 배지로 구분했습니다. 사진은

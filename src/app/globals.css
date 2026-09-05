@@ -37,18 +37,18 @@
   --color-nav-muted: #8F8C9C;
 
   /* 타이포 */
-  --text-badge: 11px;
-  --text-badge--line-height: 16px;
-  --text-body: 13px;
-  --text-body--line-height: 20px;
-  --text-ui: 14px;
-  --text-ui--line-height: 20px;
-  --text-section: 16px;
-  --text-section--line-height: 24px;
-  --text-page: 22px;
-  --text-page--line-height: 30px;
-  --text-figure: 28px;
-  --text-figure--line-height: 34px;
+  --text-badge: 12px;
+  --text-badge--line-height: 18px;
+  --text-body: 14px;
+  --text-body--line-height: 21px;
+  --text-ui: 15px;
+  --text-ui--line-height: 22px;
+  --text-section: 17px;
+  --text-section--line-height: 25px;
+  --text-page: 24px;
+  --text-page--line-height: 32px;
+  --text-figure: 30px;
+  --text-figure--line-height: 36px;
 
   --radius-box: 4px;
 
@@ -66,7 +66,7 @@ body {
   color: var(--color-fg);
   font-family: var(--font-sans);
   font-size: var(--text-body);
-  line-height: 20px;
+  line-height: 21px;
   font-weight: 400;
 }
 

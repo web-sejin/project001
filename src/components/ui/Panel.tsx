@@ -50,7 +50,7 @@ export function PanelHeader({
       <div className="min-w-0">
         <h2 className="text-section font-semibold text-fg">{title}</h2>
         {description ? (
-          <p className="mt-0.5 max-w-xl text-badge leading-[16px] text-fg-muted">
+          <p className="mt-0.5 max-w-xl text-badge leading-[18px] text-fg-muted">
             {description}
           </p>
         ) : null}

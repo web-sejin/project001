@@ -423,7 +423,7 @@ function Field({
       <p className="mb-1 text-badge font-semibold text-fg-muted">{label}</p>
       {children}
       {help ? (
-        <p className="mt-1 text-badge leading-[16px] text-fg-subtle">{help}</p>
+        <p className="mt-1 text-badge leading-[18px] text-fg-subtle">{help}</p>
       ) : null}
     </div>
   );

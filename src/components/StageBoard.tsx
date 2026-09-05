@@ -40,7 +40,7 @@ export function StageBoard() {
                     {list.length}
                   </span>
                 </div>
-                <p className="mt-0.5 text-badge leading-[15px] text-fg-subtle">
+                <p className="mt-0.5 text-badge leading-[17px] text-fg-subtle">
                   {stage.hint}
                 </p>
               </header>

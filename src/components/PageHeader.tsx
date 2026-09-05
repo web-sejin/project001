@@ -23,7 +23,7 @@ export function PageHeader({
         <div className="min-w-0">
           <h1 className="text-page font-semibold text-fg">{title}</h1>
           {purpose ? (
-            <p className="mt-1.5 max-w-3xl text-body leading-[19px] text-fg-muted">
+            <p className="mt-1.5 max-w-3xl text-body leading-[21px] text-fg-muted">
               {purpose}
             </p>
           ) : null}

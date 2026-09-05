@@ -125,7 +125,7 @@ export function PublishTab({
           </table>
         </div>
         <div className="border-t border-line bg-surface px-4 py-2.5">
-          <p className="text-badge leading-[16px] text-fg-muted">
+          <p className="text-badge leading-[18px] text-fg-muted">
             채널마다 발행 방식이 다릅니다. 자사몰은 내부 시스템에서 바로 등록하고,
             나머지는 각 채널에서 게시한 뒤 링크를 여기에 남깁니다.
           </p>
@@ -199,7 +199,7 @@ export function PublishTab({
                     onChange={(e) =>
                       setDrafts((prev) => ({ ...prev, [active.id]: e.target.value }))
                     }
-                    className="w-full resize-y rounded-box border border-line-strong p-2.5 text-body leading-[19px] outline-none focus:border-ai"
+                    className="w-full resize-y rounded-box border border-line-strong p-2.5 text-body leading-[21px] outline-none focus:border-ai"
                   />
                   <Button
                     size="sm"

@@ -176,7 +176,7 @@ export function FacilityRulesDialog({
           </div>
 
           {editing.scope === "객실" ? (
-            <p className="mt-3 rounded-box bg-surface px-3 py-2 text-badge leading-[16px] text-fg-muted">
+            <p className="mt-3 rounded-box bg-surface px-3 py-2 text-badge leading-[18px] text-fg-muted">
               객실 규칙은 객실 1개 기준입니다. 객실 2개인 숙소면 객실 5컷이 10컷이
               됩니다. 객실별로 행을 나누지 않는 이유는{" "}
               <span className="text-fg">

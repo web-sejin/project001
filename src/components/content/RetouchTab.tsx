@@ -16,10 +16,14 @@ import { useStore } from "@/store/MockStore";
 import type { ApprovalStatus, Content, Photo, ReviewFlag } from "@/data/types";
 
 const FLAG_METHOD: Record<ReviewFlag, string> = {
-  "수평 틀어짐": "허프 변환으로 직선을 검출한 뒤 수평선 대비 각도를 계산합니다",
-  "노출 편차": "히스토그램 분석. 세트 평균에서 벗어난 컷을 표시합니다",
-  "색온도 편차": "RGB 평균 비교. 세트 중앙값에서 벗어난 컷을 찾습니다",
-  눈감음: "얼굴 랜드마크 검출. 작은 전용 모델이면 충분합니다",
+  "수평 틀어짐":
+    "사진 속 직선을 찾아 지평선과 몇 도 어긋났는지 계산합니다. 이미지 처리 라이브러리(OpenCV)로 하고 AI는 쓰지 않습니다",
+  "노출 편차":
+    "사진의 밝기를 재서 같은 촬영 건의 평균에서 많이 벗어난 컷을 표시합니다",
+  "색온도 편차":
+    "사진의 평균 색을 재서 같은 촬영 건의 가운데 값에서 벗어난 컷을 찾습니다",
+  눈감음:
+    "얼굴에서 눈 위치를 찾아주는 작은 AI로 확인합니다(MediaPipe 같은 라이브러리). 큰 AI를 부를 일이 아닙니다",
 };
 
 type Filter = "전체" | "플래그" | "대기" | "반려" | "승인";
@@ -61,12 +65,12 @@ export function RetouchTab({
           <PanelHeader title="보정 흐름" description="어디까지가 시스템인지" />
           <div className="p-4">
             <RetouchFlow />
-            <p className="mt-3 text-body leading-[19px] text-fg-muted">
+            <p className="mt-3 text-body leading-[21px] text-fg-muted">
               보정은 수동입니다. 리터처가 라이트룸에서 직접 합니다. 시스템이 하는 건
               누구에게 언제 맡겼는지 기록하고, 결과가 올라오면 사람이 볼 대상을 좁혀
               주고, 반려 사유를 남기는 것입니다.
             </p>
-            <p className="mt-2 text-body leading-[19px] text-fg-muted">
+            <p className="mt-2 text-body leading-[21px] text-fg-muted">
               배정하면 상태가 보정중으로 넘어가고 정체 일수 계산이 시작됩니다.
             </p>
           </div>
@@ -295,7 +299,7 @@ export function RetouchTab({
                       {selected.rejectHistory.map((r) => (
                         <li
                           key={r.round}
-                          className="text-badge leading-[16px] text-fg-muted"
+                          className="text-badge leading-[18px] text-fg-muted"
                         >
                           <span className="tnum text-fg-subtle">
                             {r.round}차 · {r.at} · {r.by}
@@ -307,7 +311,7 @@ export function RetouchTab({
                       {(history[selected.id] ?? []).map((r, i) => (
                         <li
                           key={`new-${i}`}
-                          className="text-badge leading-[16px] text-fg-muted"
+                          className="text-badge leading-[18px] text-fg-muted"
                         >
                           <span className="tnum text-fg-subtle">
                             {selected.rejectHistory.length + i + 1}차 · 방금 · 나

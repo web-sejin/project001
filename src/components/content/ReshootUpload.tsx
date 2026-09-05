@@ -71,7 +71,7 @@ export function ReshootUpload({
 
       <div className="p-4">
         {missing.length > 0 ? (
-          <p className="mb-3 rounded-box border border-[#EFC2C1] bg-[#FBEAEA] px-3 py-2 text-badge leading-[16px] text-fg-muted">
+          <p className="mb-3 rounded-box border border-[#EFC2C1] bg-[#FBEAEA] px-3 py-2 text-badge leading-[18px] text-fg-muted">
             아직 필요한 컷:{" "}
             <span className="font-semibold text-danger">
               {missing.map((m) => `${m.label} ${m.required - m.found}장`).join(", ")}
