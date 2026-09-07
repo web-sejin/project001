@@ -12,7 +12,7 @@ import { Toggle } from "@/components/ui/Toggle";
 import { Dialog } from "@/components/ui/Dialog";
 import { ReshootUpload } from "./ReshootUpload";
 import { UploadVerify } from "./UploadVerify";
-import { countByLabel } from "@/lib/photoLabel";
+import { UNCLASSIFIED, countByLabel } from "@/lib/photoLabel";
 import type { ContentAnalysis } from "@/data/analysis";
 import { useStore } from "@/store/MockStore";
 import type { Content, Photo } from "@/data/types";
@@ -32,6 +32,8 @@ export function UploadTab({
   const [recommendedOnly, setRecommendedOnly] = useState(true);
   const [labelFilter, setLabelFilter] = useState("전체");
   const [reshootOpen, setReshootOpen] = useState(false);
+  // 닫기만 있으면 올린 게 반영된 건지 취소된 건지 알 수 없다. 보정본 업로드와 같은 방식으로 묻는다.
+  const [reshootConfirm, setReshootConfirm] = useState<null | "cancel">(null);
 
   const labels = useMemo(
     () => ["전체", ...Array.from(new Set(photos.map((p) => p.aiLabel)))],
@@ -49,6 +51,13 @@ export function UploadTab({
     .filter((m) => !dismissed.includes(m.label))
     .filter((m) => m.found + (extraCounts[m.label] ?? 0) >= m.required);
   const lowConfidence = photos.filter((p) => p.confidence < 0.8).length;
+  // 분류를 지정하지 않은 컷은 어느 항목을 채웠는지 알 수 없어 누락 대조에 못 들어간다.
+  const unclassified = extra.filter((f) => f.label === UNCLASSIFIED).length;
+
+  const closeReshoot = () => {
+    setReshootOpen(false);
+    setReshootConfirm(null);
+  };
 
   if (content.status === "촬영예정") {
     return <UploadVerify content={content} />;
@@ -316,10 +325,74 @@ export function UploadTab({
 
       <Dialog
         open={reshootOpen}
-        onClose={() => setReshootOpen(false)}
+        onClose={() =>
+          extra.length > 0 && reshootConfirm === null
+            ? setReshootConfirm("cancel")
+            : closeReshoot()
+        }
         title="추가 업로드"
         description="재촬영분이나 빠졌던 컷을 올립니다. 올리면 누락 경고가 다시 계산됩니다."
         width="720px"
+        footer={
+          reshootConfirm === "cancel" ? (
+            <>
+              <span className="mr-auto text-badge leading-[18px] text-fg-muted">
+                올린 <span className="tnum">{extra.length}</span>장을 어떻게 할까요?
+                남겨 두면 누락 대조에 그대로 반영됩니다.
+              </span>
+              <Button variant="quiet" onClick={() => setReshootConfirm(null)}>
+                계속 올리기
+              </Button>
+              <Button onClick={closeReshoot}>남겨두고 닫기</Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  store.clearUploads(content.id);
+                  closeReshoot();
+                }}
+              >
+                지우고 닫기
+              </Button>
+            </>
+          ) : (
+            <>
+              {extra.length === 0 ? (
+                <span className="mr-auto text-badge text-fg-muted">
+                  사진을 올리면 누락 경고가 다시 계산됩니다
+                </span>
+              ) : unclassified > 0 ? (
+                <span className="mr-auto text-badge font-semibold text-warn">
+                  미분류 <span className="tnum">{unclassified}</span>장은 어느 공간인지
+                  지정해야 누락 대조에 들어갑니다
+                </span>
+              ) : openMissing.length > 0 ? (
+                <span className="mr-auto text-badge font-semibold text-warn">
+                  <span className="tnum">{extra.length}</span>장 반영됨. 아직 필요한 컷이{" "}
+                  <span className="tnum">{openMissing.length}</span>종 남았습니다
+                </span>
+              ) : (
+                <span className="mr-auto text-badge font-semibold text-success">
+                  <span className="tnum">{extra.length}</span>장 반영됨. 필요한 컷이 모두
+                  채워졌습니다
+                </span>
+              )}
+              <Button
+                onClick={() =>
+                  extra.length > 0 ? setReshootConfirm("cancel") : closeReshoot()
+                }
+              >
+                취소
+              </Button>
+              <Button
+                variant="primary"
+                disabled={extra.length === 0 || unclassified > 0}
+                onClick={closeReshoot}
+              >
+                업로드 완료
+              </Button>
+            </>
+          )
+        }
       >
         <ReshootUpload content={content} missing={openMissing} />
       </Dialog>
