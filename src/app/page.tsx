@@ -26,6 +26,8 @@ export default function DashboardPage() {
       daysBetween(TODAY, c.shootDate) <= 7,
   );
   const reshoots = store.contents.reduce((s, c) => s + c.reshootCount, 0);
+  // 한 건에서 두 번 나기도 해서 건수와 횟수가 어긋나 보인다. 건수를 같이 적어 둔다.
+  const reshootCases = store.contents.filter((c) => c.reshootCount > 0).length;
   // 단계별 평균 소요일 패널을 내리면서 같이 주석 처리 (STAGE_DURATIONS import 포함)
   // const maxDays = Math.max(...STAGE_DURATIONS.map((s) => s.days));
 
@@ -57,7 +59,7 @@ export default function DashboardPage() {
             value={reshoots}
             unit="회"
             tone="warn"
-            note="줄여야 하는 숫자"
+            note={`${reshootCases}건에서 발생, 줄여야 하는 숫자`}
           />
         </div>
 
