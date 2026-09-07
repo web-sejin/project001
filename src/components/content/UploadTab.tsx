@@ -34,6 +34,9 @@ export function UploadTab({
   const [reshootOpen, setReshootOpen] = useState(false);
   // 닫기만 있으면 올린 게 반영된 건지 취소된 건지 알 수 없다. 보정본 업로드와 같은 방식으로 묻는다.
   const [reshootConfirm, setReshootConfirm] = useState<null | "cancel">(null);
+  // 누락분을 뒤늦게 올린 것과 숙소를 다시 방문해 찍어 온 것은 다르다.
+  // 자동으로 세면 지표가 부풀어서, 완료 시점에 사람이 표시하게 한다.
+  const [markReshoot, setMarkReshoot] = useState(false);
 
   const labels = useMemo(
     () => ["전체", ...Array.from(new Set(photos.map((p) => p.aiLabel)))],
@@ -57,6 +60,7 @@ export function UploadTab({
   const closeReshoot = () => {
     setReshootOpen(false);
     setReshootConfirm(null);
+    setMarkReshoot(false);
   };
 
   if (content.status === "촬영예정") {
@@ -376,6 +380,20 @@ export function UploadTab({
                   채워졌습니다
                 </span>
               )}
+              <label className="flex items-center gap-1.5 text-badge text-fg-muted">
+                <input
+                  type="checkbox"
+                  checked={markReshoot}
+                  onChange={(e) => setMarkReshoot(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-[#6940A5]"
+                />
+                재촬영으로 기록
+                <InfoTip align="right">
+                  숙소를 다시 방문해 찍어 온 경우에만 체크하세요. 현황판의 재촬영
+                  누적에 <span className="tnum">1</span>회가 더해집니다. 촬영은 했는데
+                  업로드가 늦은 컷이면 체크하지 않습니다.
+                </InfoTip>
+              </label>
               <Button
                 onClick={() =>
                   extra.length > 0 ? setReshootConfirm("cancel") : closeReshoot()
@@ -386,7 +404,14 @@ export function UploadTab({
               <Button
                 variant="primary"
                 disabled={extra.length === 0 || unclassified > 0}
-                onClick={closeReshoot}
+                onClick={() => {
+                  if (markReshoot) {
+                    store.updateContent(content.id, {
+                      reshootCount: content.reshootCount + 1,
+                    });
+                  }
+                  closeReshoot();
+                }}
               >
                 업로드 완료
               </Button>
