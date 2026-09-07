@@ -132,18 +132,10 @@ function AxToggle({
             />
             보라 — AI를 쓰는 지점
           </p>
-          <p className="mt-1 flex items-center gap-1.5 text-badge text-nav-fg">
-            <span
-              aria-hidden
-              className="inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] bg-auto"
-            />
-            남색 — 자동화 (AI 아님)
-          </p>
         </>
       ) : (
         <p className="mt-2 text-badge leading-[17px] text-nav-muted">
-          지금 쓰고 있을 법한 관리 화면입니다. 켜면 어디에 AI·자동화를 넣을지
-          보입니다.
+          지금 쓰고 있을 법한 관리 화면입니다. 켜면 AI가 어디에 붙는지 보입니다.
         </p>
       )}
     </div>

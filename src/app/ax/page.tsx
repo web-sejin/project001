@@ -4,7 +4,7 @@ import { TierBadge } from "@/components/AxNote";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
-import { AX_IDEAS, TIER_DEF, axKind } from "@/data/ax";
+import { AX_IDEAS, TIER_DEF } from "@/data/ax";
 import { STAGES } from "@/data/types";
 
 const FUNNEL = [
@@ -45,29 +45,28 @@ const STAGE_TITLE: Record<string, string> = {
 
 export default function AxPage() {
   const maxCount = FUNNEL[0].count;
-  const notAi = AX_IDEAS.filter((i) => axKind(i) === "자동화").length;
 
   return (
     <div>
       <PageHeader
         title="AX 관점 아이디어"
-        purpose="업무 흐름의 각 단계에 AI 또는 자동화를 어디에 넣을지, 그리고 어디에 넣지 않을지 정리했습니다."
+        purpose="업무 흐름의 각 단계에서 AI를 실제로 어디에 쓰는지 정리했습니다."
       />
 
       <div className="max-w-4xl space-y-6 p-4 lg:p-6">
         <Panel className="border-ai-line">
           <div className="bg-ai-bg p-4">
             <h2 className="text-section font-semibold text-fg">
-              관리 화면에는 AI를 넣지 않았습니다
+              AI는 관리 화면이 아니라 작업 안에 있습니다
             </h2>
             <p className="mt-1.5 text-body leading-[21px] text-fg-muted">
-              보드, 캘린더, 상태 배지, 정체 일수, 발행 링크 기록은 전부 쿼리와 조건
-              분기입니다. 여기에 AI를 붙이면 억지입니다. AI는{" "}
+              보드, 캘린더, 상태 배지, 정체 일수는 쿼리와 조건 분기로 끝나는 부분입니다.
+              AI가 실제로 붙는 곳은{" "}
               <span className="font-semibold text-fg">
-                관리 대상인 노동 안에 있고
+                800장을 분류하고 걸러내고 채널 문구를 쓰는 작업 쪽
               </span>
-              , 관리 화면은 그 결과를 신호로 띄웁니다. 왼쪽 토글을 끄면 지금 쓰고 있을
-              법한 화면이 되고, 켜면 어디에 무엇을 얹을지가 보입니다.
+              이고, 관리 화면은 그 결과를 신호로 띄웁니다. 왼쪽 토글을 켜면 AI가 어느
+              화면 어디에 붙는지 표시됩니다.
             </p>
           </div>
         </Panel>
@@ -90,7 +89,7 @@ export default function AxPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(["연산", "전용 모델", "LLM 비전", "LLM", "AI 아님"] as const).map(
+                  {(["연산", "전용 모델", "LLM 비전", "LLM"] as const).map(
                     (tier) => (
                       <tr key={tier} className="border-b border-line align-top">
                         <td className="px-2.5 py-2">
@@ -112,15 +111,9 @@ export default function AxPage() {
               </table>
             </div>
             <div className="border-t border-line bg-surface px-4 py-2.5">
-              <p className="flex flex-wrap items-center gap-2 text-badge leading-[18px] text-fg-muted">
-                <span className="inline-flex items-center gap-1 rounded-box border border-ai-line bg-ai-bg px-1.5 py-0.5 font-semibold text-ai">
-                  AI를 씁니다
-                </span>
-                LLM · LLM 비전 · 전용 모델
-                <span className="inline-flex items-center gap-1 rounded-box border border-auto-line bg-auto-bg px-1.5 py-0.5 font-semibold text-auto">
-                  자동화 (AI 아님)
-                </span>
-                순수 연산 · 규칙
+              <p className="text-badge leading-[18px] text-fg-muted">
+                이 중 AI는 LLM · LLM 비전 · 전용 모델입니다. 순수 연산은 AI가 아니지만,
+                뒤에 오는 AI가 볼 장수를 줄이는 앞단이라 함께 적었습니다.
               </p>
             </div>
           </Panel>
@@ -128,11 +121,10 @@ export default function AxPage() {
 
         <section>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-section font-semibold text-fg">단계별 개선 지점</h2>
+            <h2 className="text-section font-semibold text-fg">AI를 쓰는 지점</h2>
             <p className="text-badge text-fg-muted">
-              <span className="tnum font-semibold text-fg">{AX_IDEAS.length}</span>개 중{" "}
-              <span className="tnum font-semibold text-fg">{notAi}</span>개는 AI를 쓰지
-              않습니다
+              업무 흐름 안에{" "}
+              <span className="tnum font-semibold text-fg">{AX_IDEAS.length}</span>곳
             </p>
           </div>
 

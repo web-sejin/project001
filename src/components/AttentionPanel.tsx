@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AxHighlight } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -31,65 +30,63 @@ export function AttentionPanel() {
 
   return (
     <>
-      <AxHighlight id="ax-08">
-        <Panel>
-          <PanelHeader
-            title="챙겨야 할 것"
-            description={`매일 ${s.notifyAt}에 검사해 담당자별로 ${s.channel} 알림을 보냅니다.`}
-            right={
-              <>
-                {items.length > 0 ? (
-                  <Badge variant={danger > 0 ? "danger" : "warn"}>
-                    <span className="tnum">{items.length}</span>건
-                  </Badge>
-                ) : (
-                  <Badge variant="success">없음</Badge>
-                )}
-                <Button size="sm" onClick={() => setOpen(true)}>
-                  알림 기준
-                </Button>
-              </>
-            }
-          />
+      <Panel>
+        <PanelHeader
+          title="챙겨야 할 것"
+          description={`매일 ${s.notifyAt}에 검사해 담당자별로 ${s.channel} 알림을 보냅니다.`}
+          right={
+            <>
+              {items.length > 0 ? (
+                <Badge variant={danger > 0 ? "danger" : "warn"}>
+                  <span className="tnum">{items.length}</span>건
+                </Badge>
+              ) : (
+                <Badge variant="success">없음</Badge>
+              )}
+              <Button size="sm" onClick={() => setOpen(true)}>
+                알림 기준
+              </Button>
+            </>
+          }
+        />
 
-          <ul className="divide-y divide-line">
-            {items.map((item, i) => {
-              const content = store.contentOf(item.contentId);
-              const acc = content
-                ? store.accommodationOf(content.accommodationId)
-                : undefined;
-              return (
-                <li key={`${item.contentId}-${item.kind}-${i}`}>
-                  <Link
-                    href={`/content/${item.contentId}`}
-                    className="flex flex-wrap items-start gap-2 px-4 py-2.5 hover:bg-surface"
-                  >
-                    <Badge variant={item.severity === "danger" ? "danger" : "warn"}>
-                      {item.kind}
-                    </Badge>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-body font-medium text-fg">
-                        {acc?.name ?? "삭제된 숙소"}
-                      </span>
-                      <span className="mt-px block text-badge text-fg-muted">
-                        {item.detail}
-                      </span>
+        <ul className="divide-y divide-line">
+          {items.map((item, i) => {
+            const content = store.contentOf(item.contentId);
+            const acc = content
+              ? store.accommodationOf(content.accommodationId)
+              : undefined;
+            return (
+              <li key={`${item.contentId}-${item.kind}-${i}`}>
+                <Link
+                  href={`/content/${item.contentId}`}
+                  className="flex flex-wrap items-start gap-2 px-4 py-2.5 hover:bg-surface"
+                >
+                  <Badge variant={item.severity === "danger" ? "danger" : "warn"}>
+                    {item.kind}
+                  </Badge>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-body font-medium text-fg">
+                      {acc?.name ?? "삭제된 숙소"}
                     </span>
-                    <span className="shrink-0 text-badge text-fg-muted">
-                      {item.owner}
+                    <span className="mt-px block text-badge text-fg-muted">
+                      {item.detail}
                     </span>
-                  </Link>
-                </li>
-              );
-            })}
-            {items.length === 0 ? (
-              <li className="px-4 py-3 text-body text-fg-muted">
-                기준에 걸린 건이 없습니다.
+                  </span>
+                  <span className="shrink-0 text-badge text-fg-muted">
+                    {item.owner}
+                  </span>
+                </Link>
               </li>
-            ) : null}
-          </ul>
-        </Panel>
-      </AxHighlight>
+            );
+          })}
+          {items.length === 0 ? (
+            <li className="px-4 py-3 text-body text-fg-muted">
+              기준에 걸린 건이 없습니다.
+            </li>
+          ) : null}
+        </ul>
+      </Panel>
 
       <Dialog
         open={open}
