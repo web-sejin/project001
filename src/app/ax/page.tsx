@@ -4,7 +4,7 @@ import { TierBadge } from "@/components/AxNote";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
-import { AX_IDEAS, TIER_DEF } from "@/data/ax";
+import { AX_IDEAS, TIER_DEF, axKind } from "@/data/ax";
 import { STAGES } from "@/data/types";
 
 const FUNNEL = [
@@ -45,12 +45,14 @@ const STAGE_TITLE: Record<string, string> = {
 
 export default function AxPage() {
   const maxCount = FUNNEL[0].count;
+  const aiCount = AX_IDEAS.filter((i) => axKind(i) === "AI").length;
+  const autoCount = AX_IDEAS.length - aiCount;
 
   return (
     <div>
       <PageHeader
         title="AX 관점 아이디어"
-        purpose="업무 흐름의 각 단계에서 AI를 실제로 어디에 쓰는지 정리했습니다."
+        purpose="업무 흐름의 각 단계에서 AI를 어디에 쓰고, 어디는 AI 없이 자동화로 끝내는지 정리했습니다."
       />
 
       <div className="max-w-4xl space-y-6 p-4 lg:p-6">
@@ -89,7 +91,7 @@ export default function AxPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(["연산", "전용 모델", "LLM 비전", "LLM"] as const).map(
+                  {(["연산", "전용 모델", "LLM 비전", "LLM", "AI 아님"] as const).map(
                     (tier) => (
                       <tr key={tier} className="border-b border-line align-top">
                         <td className="px-2.5 py-2">
@@ -111,9 +113,19 @@ export default function AxPage() {
               </table>
             </div>
             <div className="border-t border-line bg-surface px-4 py-2.5">
-              <p className="text-badge leading-[18px] text-fg-muted">
-                이 중 AI는 LLM · LLM 비전 · 전용 모델입니다. 순수 연산은 AI가 아니지만,
-                뒤에 오는 AI가 볼 장수를 줄이는 앞단이라 함께 적었습니다.
+              <p className="flex flex-wrap items-center gap-2 text-badge leading-[18px] text-fg-muted">
+                <span className="inline-flex items-center gap-1 rounded-box border border-ai-line bg-ai-bg px-1.5 py-0.5 font-semibold text-ai">
+                  AI를 씁니다
+                </span>
+                LLM · LLM 비전 · 전용 모델
+                <span className="inline-flex items-center gap-1 rounded-box border border-auto-line bg-auto-bg px-1.5 py-0.5 font-semibold text-auto">
+                  자동화 (AI 아님)
+                </span>
+                순수 연산 · 규칙
+              </p>
+              <p className="mt-1.5 text-badge leading-[18px] text-fg-subtle">
+                순수 연산은 AI가 아니지만 뒤에 오는 AI가 볼 장수를 줄이는 앞단이라 표에
+                함께 적었습니다.
               </p>
             </div>
           </Panel>
@@ -121,10 +133,10 @@ export default function AxPage() {
 
         <section>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-section font-semibold text-fg">AI를 쓰는 지점</h2>
+            <h2 className="text-section font-semibold text-fg">단계별 개선 지점</h2>
             <p className="text-badge text-fg-muted">
-              업무 흐름 안에{" "}
-              <span className="tnum font-semibold text-fg">{AX_IDEAS.length}</span>곳
+              AI <span className="tnum font-semibold text-fg">{aiCount}</span>곳, 자동화{" "}
+              <span className="tnum font-semibold text-fg">{autoCount}</span>곳
             </p>
           </div>
 

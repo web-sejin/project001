@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { AxTag } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
@@ -60,7 +61,12 @@ export function ShootTab({
       <div className="space-y-4">
         <Panel>
           <PanelHeader
-            title="촬영 필수 컷 체크리스트"
+            title={
+              <span className="flex flex-wrap items-center gap-1.5">
+                촬영 필수 컷 체크리스트
+                <AxTag id="ax-01" align="left" />
+              </span>
+            }
             description="숙소가 보유한 시설에서 전개된 목록입니다. 이 건만의 예외는 추가·제외할 수 있습니다."
             right={
               <Badge variant={met === active.length ? "success" : "outline"}>

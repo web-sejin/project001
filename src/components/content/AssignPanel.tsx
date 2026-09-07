@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AxTag } from "@/components/AxNote";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
@@ -67,6 +68,7 @@ export function AssignPanel({ content }: { content: Content }) {
         <div>
           <p className="mb-1 flex items-center gap-1.5 text-badge font-semibold text-fg-muted">
             담당자
+            <AxTag id="ax-08" align="left" />
           </p>
           <div className="space-y-1">
             {RETOUCHERS.map((name) => {
