@@ -138,7 +138,7 @@ export function RetouchTab({
       <Panel>
         <PanelHeader
           title="검수"
-          description="사진 단위로 승인·반려합니다. 반려 사유는 필수입니다."
+          description="이 구간은 사람이 판단합니다. 보정본이 도착해도 상태는 대기이고, 한 장씩 원본과 비교해 승인하거나 반려합니다. 반려는 사유가 필수이고 몇 차 반려인지 이력에 남습니다. 대기나 반려가 남아 있으면 발행 단계로 넘어가지 않습니다."
           right={
             <>
               {retouched.length > 0 ? (
@@ -200,7 +200,7 @@ export function RetouchTab({
         </div>
 
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-3 content-start gap-2 sm:grid-cols-4 lg:grid-cols-6">
             {visible.map((p) => {
               const st = statusOf(p);
               return (
