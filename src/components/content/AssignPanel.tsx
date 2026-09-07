@@ -145,39 +145,172 @@ export function AssignPanel({ content }: { content: Content }) {
   );
 }
 
-/** 어디까지가 시스템이고 어디부터 사람인지 한 줄로 */
-export function RetouchFlow() {
-  const steps: Array<{ label: string; outside?: boolean }> = [
-    { label: "리터처 배정" },
-    { label: "원본 전달" },
-    { label: "Lightroom 보정", outside: true },
-    { label: "결과 업로드" },
-    { label: "원본과 짝짓기" },
-    { label: "검수 · 사람" },
-    { label: "승인 · 반려" },
+/** 단계 순서. 상태값만으로 어디까지 왔는지 가늠할 때 쓴다 */
+const STATUS_ORDER: Array<Content["status"]> = [
+  "촬영예정",
+  "촬영완료",
+  "보정중",
+  "검수",
+  "발행",
+];
+
+/** 보정 흐름의 한 단계. 누가 하는 일인지가 라벨만큼 중요하다 */
+export interface RetouchStep {
+  label: string;
+  actor: "시스템" | "사람" | "시스템 밖";
+  hint: string;
+  done: boolean;
+}
+
+/**
+ * 이 건이 보정 흐름의 어디까지 왔는지 계산한다.
+ *
+ * 단계를 글로 설명하는 대신 실제 데이터에서 완료 여부를 뽑는다.
+ * 배정 기록, 도착한 보정본 수, 짝을 못 찾은 수, 상태. 전부 이미 갖고 있는 값이라
+ * 여기에 AI가 낄 자리는 없다.
+ */
+export function retouchSteps(
+  content: Content,
+  retouchedCount: number,
+  unmatchedCount: number,
+): RetouchStep[] {
+  // 목업에서 보정본을 실제로 올리지 않아도 상태가 이미 넘어가 있는 건이 있다.
+  // 그래서 올라온 파일뿐 아니라 상태값으로도 완료 여부를 판단한다.
+  const rank = STATUS_ORDER.indexOf(content.status);
+  const past = (status: Content["status"]) => rank >= STATUS_ORDER.indexOf(status);
+  const assigned = Boolean(content.retoucher) || past("보정중");
+  const arrived = retouchedCount > 0 || past("검수");
+  const matched = past("검수") ? unmatchedCount === 0 : arrived && unmatchedCount === 0;
+  return [
+    {
+      label: "리터처 배정",
+      actor: "시스템",
+      hint: "누구에게 언제 맡겼는지 기록합니다. 여기서 정체 일수가 시작됩니다.",
+      done: assigned,
+    },
+    {
+      label: "원본 전달",
+      actor: "시스템",
+      hint: "셀렉한 원본을 리터처가 내려받습니다. 배정과 동시에 열립니다.",
+      done: assigned,
+    },
+    {
+      label: "Lightroom 보정",
+      actor: "시스템 밖",
+      hint: "리터처가 직접 합니다. 시스템은 여기에 관여하지 않습니다.",
+      done: arrived,
+    },
+    {
+      label: "보정본 업로드 · 짝짓기",
+      actor: "시스템",
+      hint: "올린 보정본을 파일명으로 원본과 맞춰 짝지어 둡니다.",
+      done: matched,
+    },
+    {
+      label: "검수 승인 · 반려",
+      actor: "사람",
+      hint: "사진 단위로 판단합니다. 반려 사유는 이력에 남습니다.",
+      done: content.status === "발행",
+    },
   ];
+}
+
+/** 헤더에 붙일 "지금 3/5 · 리터처 작업 중" 한 줄 */
+export function retouchNow(steps: RetouchStep[], unmatchedCount: number) {
+  const index = steps.findIndex((s) => !s.done);
+  if (index === -1) {
+    return { index: steps.length, total: steps.length, label: "보정·검수 끝" };
+  }
+  const label = [
+    "배정 대기",
+    "원본 전달",
+    "리터처 작업 중",
+    unmatchedCount > 0 ? "짝짓기 필요" : "보정본 대기",
+    "검수 중",
+  ][index];
+  return { index: index + 1, total: steps.length, label };
+}
+
+/**
+ * 보정 흐름.
+ *
+ * 설명용 그림이 아니라 이 건의 진행 상태다.
+ * 단계마다 주체를 붙여서 어디부터가 시스템 밖인지 보이게 하고,
+ * 지금 어디에 멈춰 있는지를 표시한다. 그래야 다음에 뭘 해야 하는지가 나온다.
+ */
+export function RetouchFlow({
+  content,
+  retouchedCount,
+  unmatchedCount,
+}: {
+  content: Content;
+  retouchedCount: number;
+  unmatchedCount: number;
+}) {
+  const steps = retouchSteps(content, retouchedCount, unmatchedCount);
+  const current = steps.findIndex((s) => !s.done);
 
   return (
-    <div className="thin-scroll flex items-center gap-1 overflow-x-auto">
-      {steps.map((s, i) => (
-        <div key={s.label} className="flex shrink-0 items-center gap-1">
-          <span
-            className={`rounded-box border px-2 py-1 text-badge ${
-              s.outside
-                ? "border-dashed border-line-strong bg-surface text-fg-subtle"
-                : "border-line-strong bg-canvas text-fg-muted"
+    <ol>
+      {steps.map((s, i) => {
+        const isCurrent = i === current;
+        return (
+          <li
+            key={s.label}
+            className={`flex gap-2 rounded-box border px-2.5 py-2 ${
+              isCurrent ? "border-line-strong bg-surface" : "border-transparent"
             }`}
           >
-            {s.label}
-            {s.outside ? <span className="ml-1 text-fg-subtle">시스템 밖</span> : null}
-          </span>
-          {i < steps.length - 1 ? (
-            <span aria-hidden className="text-fg-subtle">
-              ›
+            <span className="flex flex-col items-center">
+              <span
+                aria-hidden
+                className={`text-badge leading-[18px] ${
+                  s.done ? "text-success" : isCurrent ? "text-fg" : "text-fg-subtle"
+                }`}
+              >
+                {s.done ? "●" : "○"}
+              </span>
+              {i < steps.length - 1 ? (
+                <span aria-hidden className="w-px flex-1 bg-line-strong" />
+              ) : null}
             </span>
-          ) : null}
-        </div>
-      ))}
-    </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="tnum text-badge text-fg-subtle">{i + 1}</span>
+                <span
+                  className={`text-body ${
+                    isCurrent
+                      ? "font-semibold text-fg"
+                      : s.done
+                        ? "text-fg"
+                        : "text-fg-muted"
+                  }`}
+                >
+                  {s.label}
+                </span>
+                <ActorTag actor={s.actor} />
+                {isCurrent ? (
+                  <span className="text-badge font-semibold text-warn">지금 여기</span>
+                ) : null}
+              </div>
+              <p className="mt-0.5 text-badge leading-[18px] text-fg-subtle">{s.hint}</p>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
+}
+
+/** 시스템 밖 단계만 점선으로. 나머지와 다른 종류의 일이라는 표시다 */
+function ActorTag({ actor }: { actor: RetouchStep["actor"] }) {
+  if (actor === "시스템 밖") {
+    return (
+      <span className="rounded-box border border-dashed border-line-strong bg-surface px-1.5 py-0.5 text-badge text-fg-subtle">
+        시스템 밖
+      </span>
+    );
+  }
+  return <Badge variant={actor === "사람" ? "neutral" : "outline"}>{actor}</Badge>;
 }

@@ -294,6 +294,9 @@ export default function AxPage() {
           </Panel>
         </section>
 
+        {/*
+          도입 전 확인할 것. 당분간 화면에서 내려둔다.
+
         <section>
           <h2 className="text-section font-semibold text-fg">도입 전 확인할 것</h2>
           <Panel className="mt-3">
@@ -313,6 +316,7 @@ export default function AxPage() {
             </ul>
           </Panel>
         </section>
+        */}
 
         <section className="rounded-box border border-line-strong bg-surface p-4">
           <h2 className="text-body font-semibold text-fg">이 목업의 범위</h2>

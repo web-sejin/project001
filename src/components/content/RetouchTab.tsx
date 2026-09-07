@@ -7,7 +7,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
 import { PhotoBox } from "@/components/ui/PhotoBox";
-import { AssignPanel, RetouchFlow } from "./AssignPanel";
+import {
+  AssignPanel,
+  RetouchFlow,
+  retouchNow,
+  retouchSteps,
+} from "./AssignPanel";
 import { CompareView, type Pin } from "./CompareView";
 import { Dialog } from "@/components/ui/Dialog";
 import { RetouchedUpload } from "./RetouchedUpload";
@@ -78,20 +83,11 @@ export function RetouchTab({
     return (
       <div className="grid gap-4 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
         <AssignPanel content={content} />
-        <Panel>
-          <PanelHeader title="보정 흐름" description="어디까지가 시스템인지" />
-          <div className="p-4">
-            <RetouchFlow />
-            <p className="mt-3 text-body leading-[21px] text-fg-muted">
-              보정은 수동입니다. 리터처가 라이트룸에서 직접 합니다. 시스템이 하는 건
-              누구에게 언제 맡겼는지 기록하고, 결과물을 받아 원본과 짝지어 주고, 반려
-              사유를 남기는 것입니다.
-            </p>
-            <p className="mt-2 text-body leading-[21px] text-fg-muted">
-              배정하면 상태가 보정중으로 넘어가고 정체 일수 계산이 시작됩니다.
-            </p>
-          </div>
-        </Panel>
+        <FlowPanel
+          content={content}
+          retouchedCount={retouched.length}
+          unmatchedCount={unmatchedCount}
+        />
       </div>
     );
   }
@@ -132,17 +128,11 @@ export function RetouchTab({
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
         <AssignPanel content={content} />
-        <Panel>
-          <PanelHeader title="보정 흐름" description="어디까지가 시스템인지" />
-          <div className="p-4">
-            <RetouchFlow />
-            <p className="mt-3 text-body leading-[21px] text-fg-muted">
-              보정은 수동입니다. 리터처가 라이트룸에서 직접 합니다. 시스템이 하는 건
-              누구에게 언제 맡겼는지 기록하고, 결과물을 받아 원본과 짝지어 주고, 반려
-              사유를 남기는 것입니다.
-            </p>
-          </div>
-        </Panel>
+        <FlowPanel
+          content={content}
+          retouchedCount={retouched.length}
+          unmatchedCount={unmatchedCount}
+        />
       </div>
 
       <Panel>
@@ -511,5 +501,51 @@ export function RetouchTab({
         <RetouchedUpload content={content} photos={photos} />
       </Dialog>
     </div>
+  );
+}
+
+/**
+ * 보정 흐름 패널.
+ *
+ * 촬영완료(배정 전)와 보정중 이후 두 군데에서 같은 걸 보여준다.
+ * 단계 설명은 각 단계 밑으로 들어갔고, 헤더에는 지금 어디에 멈춰 있는지만 남긴다.
+ */
+function FlowPanel({
+  content,
+  retouchedCount,
+  unmatchedCount,
+}: {
+  content: Content;
+  retouchedCount: number;
+  unmatchedCount: number;
+}) {
+  const now = retouchNow(
+    retouchSteps(content, retouchedCount, unmatchedCount),
+    unmatchedCount,
+  );
+
+  return (
+    <Panel>
+      <PanelHeader
+        title="보정 흐름"
+        description="어디까지가 시스템이고 어디부터 사람인지"
+        right={
+          <Badge variant="neutral">
+            지금{" "}
+            <span className="tnum">
+              {now.index}/{now.total}
+            </span>{" "}
+            · {now.label}
+          </Badge>
+        }
+      />
+      <div className="p-3">
+        <RetouchFlow
+          content={content}
+          retouchedCount={retouchedCount}
+          unmatchedCount={unmatchedCount}
+        />
+      </div>
+    </Panel>
   );
 }

@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StageBoard } from "@/components/StageBoard";
 import { Button } from "@/components/ui/Button";
 import { Panel, PanelHeader } from "@/components/ui/Panel";
-import { STAGE_DURATIONS, TODAY, daysBetween } from "@/data/contents";
+import { TODAY, daysBetween } from "@/data/contents";
 import { findAttention } from "@/lib/attention";
 import { useStore } from "@/store/MockStore";
 
@@ -26,7 +26,8 @@ export default function DashboardPage() {
       daysBetween(TODAY, c.shootDate) <= 7,
   );
   const reshoots = store.contents.reduce((s, c) => s + c.reshootCount, 0);
-  const maxDays = Math.max(...STAGE_DURATIONS.map((s) => s.days));
+  // 단계별 평균 소요일 패널을 내리면서 같이 주석 처리 (STAGE_DURATIONS import 포함)
+  // const maxDays = Math.max(...STAGE_DURATIONS.map((s) => s.days));
 
   return (
     <div>
@@ -81,7 +82,13 @@ export default function DashboardPage() {
         </Panel>
         </AxHighlight>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+        {/* 소요일 패널을 내려서 한 칸짜리 그리드가 됐다. 되살리면 아래 주석의 클래스로 되돌린다 */}
+        {/* <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]"> */}
+        <div className="grid gap-4">
+          {/*
+            단계별 평균 소요일. 가정한 숫자라 당분간 화면에서 내려둔다.
+            되살릴 때 STAGE_DURATIONS import, maxDays, 위 그리드 클래스도 함께 되돌린다.
+
           <AxHighlight id="ax-10">
           <Panel>
             <PanelHeader
@@ -130,6 +137,7 @@ export default function DashboardPage() {
             </div>
           </Panel>
           </AxHighlight>
+          */}
 
           <AttentionPanel />
         </div>
