@@ -139,6 +139,10 @@ export default function AxPage() {
               <span className="tnum font-semibold text-fg">{autoCount}</span>곳
             </p>
           </div>
+          <p className="mt-1 text-body leading-[21px] text-fg-muted">
+            자동화는 사람이 시키지 않아도 스스로 도는 것만 셌습니다. 화면을 열었을 때
+            계산해서 보여주는 것은 기능이지 자동화가 아닙니다.
+          </p>
 
           <div className="mt-3 space-y-4">
             {STAGE_ORDER.map((stageKey) => {

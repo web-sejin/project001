@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { AxHighlight } from "@/components/AxNote";
 import { FacilityRulesDialog } from "@/components/FacilityRulesDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { ScheduleForm } from "@/components/ScheduleForm";
@@ -221,7 +220,6 @@ export default function AccommodationsPage() {
           </Panel>
 
           <div className="space-y-4">
-            <AxHighlight id="ax-01">
             <Panel>
               <PanelHeader
                 title="촬영 필수 컷 목록"
@@ -266,7 +264,6 @@ export default function AccommodationsPage() {
                 </Button>
               </div>
             </Panel>
-            </AxHighlight>
           </div>
         </div>
 
